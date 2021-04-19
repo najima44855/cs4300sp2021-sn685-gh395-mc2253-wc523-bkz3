@@ -62,11 +62,6 @@ for vec in tfidfmatrix:
     if True in np.isnan(vec):
         count2+=1
 """
-#there are no nan vectors, remove the nonzero vectors
-for i, vec in enumerate(tfidfmatrix):
-    if not vec.any():
-        tfidfmatrix[i][vec==0]=1e-16
-
 """
 Given the tfidf representations of the data and the query, compute the ranking of 
 cosine similarity scores.
@@ -76,20 +71,25 @@ Parameters:
 -tfidfq (1xf): tfidf representation of the query
 
 Returns:
+-list of ranked manga by name
 -a np array (1xd) with the ranking of each manga 
 e.g. index 0 in the array is the highest ranked
 -a np array (1xd) with the cos sim score of each manga
 e.g. index 0 of the array gives the cos sim score to manga 0
 """
 def cos_sim_rank(tfidfmat, tfidfq):
-    tfidfmat = tfidfmat/np.linalg.norm(tfidfmat, axis=1, keepdims=True)
+    if not tfidfq.any(): #no query
+        return np.arrange(num_manga), np.zeros(num_manga)
+    docnorms = np.linalg.norm(tfidfmat, axis=1, keepdims=True) 
+    docnorms[docnorms==0] = 1
+    tfidfmat = tfidfmat/docnorms
     tfidfq = tfidfq/np.linalg.norm(tfidfq)
     cos_scores = np.sum(tfidfmat*tfidfq, axis=1) #index of manga -> cos sim score
 
-    results = []
+    results = []#contains names ranked
     for manga_idx in cos_scores.argsort()[::-1]:
         results.append(index_to_manga_name[manga_idx])
-    return results , cos_scores
+    return results, cos_scores.argsort()[::-1], cos_scores
 
 
 """
@@ -121,6 +121,7 @@ Parameters:
 -input_manga_to_index_dict: Dictionary from manga names to index
 
 Returns:
+-list of ranked manga by name
 -a np array (1xd) with the ranking of each manga 
 e.g. index 0 in the array is the highest ranked
 -a np array (1xd) with the jaccard sim score of each manga
@@ -153,12 +154,14 @@ def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to
     results = []
     for manga_idx in jac_scores.argsort()[::-1]:
         results.append(index_to_manga_name[manga_idx])
-    return results , jac_scores
-"""
-cos_sim_rank, cos_sim_scores = cos_sim_rank(tfidfmatrix, tfidfquery)
-print(cos_sim_rank[:10])
+    return results, jac_scores.argsort()[::-1], jac_scores
 
+cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = cos_sim_rank(tfidfmatrix, tfidfquery)
 
-jac_sim_rank, jac_sim_scores = grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index)
-print(jac_sim_rank[:10])
-"""
+jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index)
+
+combined_scores = cos_sim_scores +  0.25 * jac_sim_scores
+overall_rank_idx = combined_scores.argsort()[::-1]
+overall_rank_names = []
+for manga_idx in overall_rank_idx:
+    overall_rank_names.append(index_to_manga_name[manga_idx])
