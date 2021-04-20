@@ -1,5 +1,5 @@
 flask:
-    image: <YOUR DOCKER USERNAME>/flask-template:v1
+    image: najima44855/flask-template:v1
     ports:
       - "5000:5000"
     environment:
