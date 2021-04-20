@@ -10,30 +10,30 @@ import pickle
 with open('dataset_500_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
-query = ["food"] #query consisting of keywords inputted by user # hard-coded
-input_list= ['Berserk','Shingeki no Kyojin'] # hard-coded
+# query = ["food"] #query consisting of keywords inputted by user # hard-coded
+# input_list= ['Berserk','Shingeki no Kyojin'] # hard-coded
 
-tfidf_vec = TfidfVectorizer(stop_words='english')
-#tfidf matrix for synopses
-tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
-tfidfquery = tfidf_vec.transform(query).toarray() 
-#tfidf_vec.vocabulary_ to get the mappings of words to index 
+# tfidf_vec = TfidfVectorizer(stop_words='english')
+# #tfidf matrix for synopses
+# tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
+# tfidfquery = tfidf_vec.transform(query).toarray() 
+# #tfidf_vec.vocabulary_ to get the mappings of words to index 
 
-num_manga, num_features = tfidfmatrix.shape 
+# num_manga, num_features = tfidfmatrix.shape 
 
-index_to_manga_name = dict()
-for i, manga_item in enumerate(manga_list.values()):
-    index_to_manga_name[i] = manga_item['title']
+# index_to_manga_name = dict()
+# for i, manga_item in enumerate(manga_list.values()):
+#     index_to_manga_name[i] = manga_item['title']
 
-manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
+# manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
 
-#keys = manga names, values= genre list
-manga_to_genre_dict= dict()
-for manga_item in manga_list.values():
-    manga_to_genre_dict[manga_item['title']] = set()
-    if 'genres' in manga_item:
-        for genre in manga_item['genres']:
-            manga_to_genre_dict[manga_item['title']].add(genre['name'])
+# #keys = manga names, values= genre list
+# manga_to_genre_dict= dict()
+# for manga_item in manga_list.values():
+#     manga_to_genre_dict[manga_item['title']] = set()
+#     if 'genres' in manga_item:
+#         for genre in manga_item['genres']:
+#             manga_to_genre_dict[manga_item['title']].add(genre['name'])
 
 """
 Given a manga, return the cosine similarity between the it and the query.
@@ -50,12 +50,6 @@ def cos_sim(manga_name, tfidf):
 
     return np.dot(tfidf[manga_index], tfidf[query]) / np.dot(query_norm, manga_norm)
 """
-
-def update_query(q):
-    query = q
-
-def update_input_list(il):
-    input_list = il
 
 """
 #testing for zero and nan vectors
@@ -82,7 +76,7 @@ e.g. index 0 in the array is the highest ranked
 -a np array (1xd) with the cos sim score of each manga
 e.g. index 0 of the array gives the cos sim score to manga 0
 """
-def cos_sim_rank(tfidfmat, tfidfq):
+def cos_sim_rank(tfidfmat, tfidfq, idx, num_manga):
     if not tfidfq.any(): #no query
         return np.arrange(num_manga), np.zeros(num_manga)
     docnorms = np.linalg.norm(tfidfmat, axis=1, keepdims=True) 
@@ -93,7 +87,7 @@ def cos_sim_rank(tfidfmat, tfidfq):
 
     results = []#contains names ranked
     for manga_idx in cos_scores.argsort()[::-1]:
-        results.append(index_to_manga_name[manga_idx])
+        results.append(idx[manga_idx])
     return results, cos_scores.argsort()[::-1], cos_scores
 
 
@@ -133,7 +127,7 @@ e.g. index 0 in the array is the highest ranked
 -a np array (1xd) with the jaccard sim score of each manga
 e.g. index 0 of the array gives the jaccard sim score to manga 0
 """
-def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to_index_dict):
+def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to_index_dict, idx, num_manga):
     if len(input_manga_list) == 0: #no input manga
         return np.arrange(num_manga), np.zeros(num_manga)
 
@@ -159,5 +153,5 @@ def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to
 
     results = []
     for manga_idx in jac_scores.argsort()[::-1]:
-        results.append(index_to_manga_name[manga_idx])
+        results.append(idx[manga_idx])
     return results, jac_scores.argsort()[::-1], jac_scores

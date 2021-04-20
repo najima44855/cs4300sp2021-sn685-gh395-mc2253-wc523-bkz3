@@ -7,6 +7,10 @@ from app.accounts.models.user import *
 from methods import *
 
 import secrets
+from sklearn.feature_extraction.text import TfidfVectorizer
+from collections import defaultdict
+import numpy as np 
+import pickle
 
 project_name = 'Manga Recs'
 net_id = 'Shungo Najima: sn685, Gary Ho: gh395, Michael Chen: mc2253, Winston Chen: wc523, Brian Zhu: bkz3'
@@ -99,22 +103,46 @@ def login():
 @irsystem.route('/api/', methods=['POST'])
 def api():
 	body = json.loads(request.data)
-	update_query(body.get('query'))
-	update_input_list(body.get('input_list'))
+	query = body.get('query')
+	input_list = body.get('input_list')
+
+	tfidf_vec = TfidfVectorizer(stop_words='english')
+	#tfidf matrix for synopses
+	tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
+	tfidfquery = tfidf_vec.transform(query).toarray() 
+	#tfidf_vec.vocabulary_ to get the mappings of words to index 
+
+	num_manga, num_features = tfidfmatrix.shape 
+
+	index_to_manga_name = dict()
+	for i, manga_item in enumerate(manga_list.values()):
+		index_to_manga_name[i] = manga_item['title']
+
+	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
+
+	#keys = manga names, values= genre list
+	manga_to_genre_dict= dict()
+	for manga_item in manga_list.values():
+		manga_to_genre_dict[manga_item['title']] = set()
+		if 'genres' in manga_item:
+			for genre in manga_item['genres']:
+				manga_to_genre_dict[manga_item['title']].add(genre['name'])
 
 	cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = \
-		cos_sim_rank(tfidfmatrix, tfidfquery)
+		cos_sim_rank(tfidfmatrix, tfidfquery, index_to_manga_name, num_manga)
 
 	jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = \
-		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index)
+		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index, \
+		index_to_manga_name, num_manga)
 
-	combined_scores = cos_sim_scores +  0.25 * jac_sim_scores
+	combined_scores = cos_sim_scores + 0.25 * jac_sim_scores
 	overall_rank_idx = combined_scores.argsort()[::-1]
 	overall_rank_names = []
 	for manga_idx in overall_rank_idx:
 		overall_rank_names.append(index_to_manga_name[manga_idx])
 	
-	return json.dumps( {
+	return json.dumps(
+		{
 			'similar': overall_rank_names[:10],
 			'dissimilar': overall_rank_names[-10:]
 		}
