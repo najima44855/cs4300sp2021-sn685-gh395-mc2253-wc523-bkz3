@@ -19,6 +19,6 @@ spec:
         - name: APP_SETTINGS
           value: config.DevelopmentConfig
         - name: DATABASE_URL
-          value: postgresql://localhost/my_app_db
+          value: postgresql://localhost/manga_recommender_db
         ports:
         - containerPort: 5000

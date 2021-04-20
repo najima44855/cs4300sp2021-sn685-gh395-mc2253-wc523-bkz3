@@ -1,4 +1,5 @@
 from . import *
+import os
 
 class Session(Base):
   __tablename__ = 'sessions'
@@ -12,8 +13,7 @@ class Session(Base):
     user = kwargs.get('user', None)
     if user is None:
       raise Exception() # Shouldn't be the case
-
-    self.user_id       = user.id
+    self.user_id       = kwargs.get('user_id')
     self.session_token = self._urlsafe_base_64()
     self.update_token  = self._urlsafe_base_64()
     self.expires_at    = datetime.datetime.now() + datetime.timedelta(days=7)
@@ -23,6 +23,12 @@ class Session(Base):
 
   def _urlsafe_base_64(self):
     return hashlib.sha1(os.urandom(64)).hexdigest()
+
+  def verify_session_token(self, session_token):
+    return session_token == self.session_token and datetime.datetime.now() < self.expires_at
+
+  def verify_update_token(self, update_token):
+    return update_token == self.update_token
 
 
 class SessionSchema(ModelSchema):

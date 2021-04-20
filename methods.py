@@ -7,12 +7,11 @@ import pickle
 # Optional: add alternative names/titles to manga
 
 # Input Processing
-
 with open('dataset_6500_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
-query = ["food"] #query consisting of keywords inputted by user
-input_list= ['Berserk','Shingeki no Kyojin']
+query = ["bad"] #query consisting of keywords inputted by user # hard-coded
+input_list= ['Berserk','Shingeki no Kyojin'] # hard-coded
 
 tfidf_vec = TfidfVectorizer(stop_words='english')
 #tfidf matrix for synopses
@@ -39,8 +38,8 @@ for manga_item in manga_list.values():
 """
 Given a manga, return the cosine similarity between the it and the query.
 Parameters:
-  manga_name: String (The name of the manga to be compared)
-  tfidf: TfidfVectorizer
+manga_name: String (The name of the manga to be compared)
+tfidf: TfidfVectorizer
 Returns: 
 
 def cos_sim(manga_name, tfidf):
@@ -51,6 +50,12 @@ def cos_sim(manga_name, tfidf):
 
     return np.dot(tfidf[manga_index], tfidf[query]) / np.dot(query_norm, manga_norm)
 """
+
+def update_query(q):
+    query = q
+
+def update_input_list(il):
+    input_list = il
 
 """
 #testing for zero and nan vectors
@@ -95,8 +100,8 @@ def cos_sim_rank(tfidfmat, tfidfq):
 """
 Given a list of manga, return the jaccard similarity of their genres.
 Parameters:
-  manga_list: List(String) (the list of manga to be compared)
-  input_manga_to_genre_dict: Dictionary
+manga_list: List(String) (the list of manga to be compared)
+input_manga_to_genre_dict: Dictionary
 Returns: Int (The Jaccard similarity score of the given list)
 
 def jaccard(input_manga_list, input_manga_to_genre_dict):
@@ -113,7 +118,8 @@ def jaccard(input_manga_list, input_manga_to_genre_dict):
 """
 
 """
-Given an input manga list to be similar to, computes the common genres in this list (50% occurance or greater).
+Given an input manga list to be similar to, computes the common genres in this
+list (50% occurance or greater).
 Then compute the jaccard score for each manga in the data, and rank them.
 Parameters:
 -manga_list: List(String) (the list of manga to be compared)
@@ -155,13 +161,3 @@ def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to
     for manga_idx in jac_scores.argsort()[::-1]:
         results.append(index_to_manga_name[manga_idx])
     return results, jac_scores.argsort()[::-1], jac_scores
-
-cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = cos_sim_rank(tfidfmatrix, tfidfquery)
-
-jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index)
-
-combined_scores = cos_sim_scores +  0.25 * jac_sim_scores
-overall_rank_idx = combined_scores.argsort()[::-1]
-overall_rank_names = []
-for manga_idx in overall_rank_idx:
-    overall_rank_names.append(index_to_manga_name[manga_idx])

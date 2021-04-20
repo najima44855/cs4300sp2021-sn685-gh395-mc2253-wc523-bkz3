@@ -8,5 +8,5 @@ exec gunicorn app:app \
     --user=root \
     --log-level=info \
     --access-logfile '-' \
-    -e DATABASE_URL=postgresql://localhost/my_app_db \
+    -e DATABASE_URL=postgresql://localhost/manga_recommender_db \
     -e APP_SETTINGS=config.ProductionConfig
