@@ -96,29 +96,29 @@ def login():
 		default = myconverter
 	)
 
-# @irsystem.route('/api/', methods=['POST'])
-# def api():
-# 	body = json.loads(request.data)
-# 	update_query(body.get('query'))
-# 	update_input_list(body.get('input_list'))
+@irsystem.route('/api/', methods=['POST'])
+def api():
+	body = json.loads(request.data)
+	update_query(body.get('query'))
+	update_input_list(body.get('input_list'))
 
-# 	cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = \
-# 		cos_sim_rank(tfidfmatrix, tfidfquery)
+	cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = \
+		cos_sim_rank(tfidfmatrix, tfidfquery)
 
-# 	jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = \
-# 		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index)
+	jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = \
+		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index)
 
-# 	combined_scores = cos_sim_scores +  0.25 * jac_sim_scores
-# 	overall_rank_idx = combined_scores.argsort()[::-1]
-# 	overall_rank_names = []
-# 	for manga_idx in overall_rank_idx:
-# 		overall_rank_names.append(index_to_manga_name[manga_idx])
+	combined_scores = cos_sim_scores +  0.25 * jac_sim_scores
+	overall_rank_idx = combined_scores.argsort()[::-1]
+	overall_rank_names = []
+	for manga_idx in overall_rank_idx:
+		overall_rank_names.append(index_to_manga_name[manga_idx])
 	
-# 	return json.dumps( {
-# 			'similar': overall_rank_names[:10],
-# 			'dissimilar': overall_rank_names[-10:]
-# 		}
-# 	)
+	return json.dumps( {
+			'similar': overall_rank_names[:10],
+			'dissimilar': overall_rank_names[-10:]
+		}
+	)
 
 # @irsystem.route('/connect/', methods=['GET'])
 # def connect():
