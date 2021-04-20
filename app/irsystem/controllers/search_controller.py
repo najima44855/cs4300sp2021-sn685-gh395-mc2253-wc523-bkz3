@@ -4,7 +4,7 @@ from app.accounts.controllers.sessions_controller import *
 from app.accounts.controllers.users_controller import *
 from app.accounts.models.session import *
 from app.accounts.models.user import *
-from ...methods import *
+from methods import *
 
 import secrets
 
