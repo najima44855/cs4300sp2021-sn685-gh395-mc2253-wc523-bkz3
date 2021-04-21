@@ -10,6 +10,7 @@ import secrets
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 import numpy as np 
+import requests
 import pickle
 
 project_name = 'Manga Recs'
@@ -28,13 +29,16 @@ def extract_token(request):
 
 @irsystem.route('/', methods=['GET'])
 def home():
-	query = request.args.get('search')
+	query = request.args.get('search1')
+	mlst_str = request.args.get('search2')
+	mlst = mlst_str.split(',')
 	if not query:
 		data = []
 		output_message = ''
 	else:
-		output_message = 'Your search: ' + query
-		data = range(5)
+		output_message = 'Your query1: ' + query + '\nYour query2: ' + mlst_str
+		x = requests.post('http://0.0.0.0:5000/api/', data = {'query': query, 'input_list': mlst})
+		data = x.json()['similar']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_message=output_message, data=data)
 
