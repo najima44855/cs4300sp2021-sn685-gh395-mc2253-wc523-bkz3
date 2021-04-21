@@ -32,7 +32,7 @@ def home():
 	query = request.args.get('search1')
 	mlst_str = request.args.get('search2')
 	mlst = mlst_str.split(',')
-	if not query:
+	if not query and not mlst_str:
 		data = []
 		output_message = ''
 	else:
