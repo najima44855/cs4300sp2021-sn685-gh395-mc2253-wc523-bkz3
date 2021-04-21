@@ -38,12 +38,6 @@ def home():
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_message=output_message, data=data)
 
-# @irsystem.route('/similar/', methods=['POST'])
-# returns similar by calling Gary's function 
-
-# @irsystem.route('/dissimilar/', methods=['POST'])
-# returns dissimilar by calling Gary's function
-
 def myconverter(o):
 	if isinstance(o, datetime.datetime):
 		return o.__str__()

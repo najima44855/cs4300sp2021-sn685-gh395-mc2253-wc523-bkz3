@@ -10,31 +10,6 @@ import pickle
 with open('dataset_500_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
-# query = ["food"] #query consisting of keywords inputted by user # hard-coded
-# input_list= ['Berserk','Shingeki no Kyojin'] # hard-coded
-
-# tfidf_vec = TfidfVectorizer(stop_words='english')
-# #tfidf matrix for synopses
-# tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
-# tfidfquery = tfidf_vec.transform(query).toarray() 
-# #tfidf_vec.vocabulary_ to get the mappings of words to index 
-
-# num_manga, num_features = tfidfmatrix.shape 
-
-# index_to_manga_name = dict()
-# for i, manga_item in enumerate(manga_list.values()):
-#     index_to_manga_name[i] = manga_item['title']
-
-# manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
-
-# #keys = manga names, values= genre list
-# manga_to_genre_dict= dict()
-# for manga_item in manga_list.values():
-#     manga_to_genre_dict[manga_item['title']] = set()
-#     if 'genres' in manga_item:
-#         for genre in manga_item['genres']:
-#             manga_to_genre_dict[manga_item['title']].add(genre['name'])
-
 """
 Given a manga, return the cosine similarity between the it and the query.
 Parameters:
