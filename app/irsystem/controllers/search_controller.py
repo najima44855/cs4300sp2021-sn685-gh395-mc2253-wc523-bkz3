@@ -57,7 +57,7 @@ def home():
 	else:
 		output_query = query
 		output_list = mlst
-		x = requests.post('http://localhost:5000/api/', \
+		x = requests.post('https://manga-recs.herokuapp.com/api/', \
 			json = {'query': query.split(','), 'input_list': mlst.split(',')})
 		
 		sim_data = x.json()['similar']
