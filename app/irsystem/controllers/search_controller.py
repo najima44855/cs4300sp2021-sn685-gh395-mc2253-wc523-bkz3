@@ -10,6 +10,7 @@ import secrets
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 import numpy as np 
+import requests
 import pickle
 
 project_name = 'Manga Recs'
@@ -26,17 +27,48 @@ def extract_token(request):
 
 	return True, bearer_token
 
+# @irsystem.route('/', methods=['GET'])
+# def home():
+# 	query = request.args.get('search')
+# 	if not query:
+# 		print('bruh')
+# 		data = []
+# 		output_message = ''
+# 	else:
+# 		print('boi')
+# 		output_message = 'Your search: ' + query
+# 		data = range(5)
+# 	return render_template('search.html', name=project_name, \
+# 		netid=net_id, output_message=output_message, data=data)
+
 @irsystem.route('/', methods=['GET'])
 def home():
-	query = request.args.get('search')
+	query = request.args.get('query')
+	mlst = request.args.get('input_list')
+	sim_data = []
+	dis_data = []
+	sim_synopses = []
+	sim_images = []
+	sim_scores = []
+
 	if not query:
-		data = []
-		output_message = ''
+		output_query = ''
+		output_list = ''
 	else:
-		output_message = 'Your search: ' + query
-		data = range(5)
+		output_query = query
+		output_list = mlst
+		x = requests.post('http://localhost:5000/api/', \
+			json = {'query': query.split(','), 'input_list': mlst.split(',')})
+		
+		sim_data = x.json()['similar']
+		dis_data = x.json()['dissimilar']
+		sim_synopses = x.json()['similar_synopses']
+		sim_images = x.json()['similar_images']
+		sim_scores = x.json()['similar_scores']
 	return render_template('search.html', name=project_name, \
-		netid=net_id, output_message=output_message, data=data)
+		netid=net_id, output_query=output_query, output_list=output_list, \
+		sim_data=sim_data, dis_data=dis_data, sim_synopses=sim_synopses, \
+		sim_images=sim_images, sim_scores=sim_scores, len=len(sim_data))
 
 def myconverter(o):
 	if isinstance(o, datetime.datetime):
@@ -132,13 +164,26 @@ def api():
 	combined_scores = cos_sim_scores + 0.25 * jac_sim_scores
 	overall_rank_idx = combined_scores.argsort()[::-1]
 	overall_rank_names = []
+	overall_rank_synopses = []
+	overall_rank_images = []
+	overall_rank_scores = []
 	for manga_idx in overall_rank_idx:
-		overall_rank_names.append(index_to_manga_name[manga_idx])
+		if index_to_manga_name[manga_idx] not in input_list:
+			overall_rank_names.append(index_to_manga_name[manga_idx])
+			overall_rank_synopses.append(index_to_manga[manga_idx][0])
+			overall_rank_images.append(index_to_manga[manga_idx][1])
+			overall_rank_scores.append(combined_scores[manga_idx])
 	
 	return json.dumps(
 		{
 			'similar': overall_rank_names[:10],
-			'dissimilar': overall_rank_names[-10:]
+			'dissimilar': overall_rank_names[-10:],
+			'similar_synopses': overall_rank_synopses[:10],
+			'dissimilar_synopses': overall_rank_synopses[-10:],
+			'similar_images': overall_rank_images[:10],
+			'dissimilar_images': overall_rank_images[-10:],
+			'similar_scores': overall_rank_scores[:10],
+			'dissimilar_scores': overall_rank_scores[-10:]
 		}
 	)
 

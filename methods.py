@@ -10,6 +10,12 @@ import pickle
 with open('dataset_500_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
+index_to_manga_name = dict()
+index_to_manga = dict()
+for i, manga_item in enumerate(manga_list.values()):
+    index_to_manga_name[i] = manga_item['title']
+    index_to_manga[i] = (manga_item['synopsis'], manga_item['main_picture']['large'])
+
 """
 Given a manga, return the cosine similarity between the it and the query.
 Parameters:
