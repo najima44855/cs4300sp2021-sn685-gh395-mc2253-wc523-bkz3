@@ -59,7 +59,7 @@ e.g. index 0 of the array gives the cos sim score to manga 0
 """
 def cos_sim_rank(tfidfmat, tfidfq, idx, num_manga):
     if not tfidfq.any(): #no query
-        return np.arrange(num_manga), np.zeros(num_manga)
+        return np.arange(num_manga), np.zeros(num_manga)
     docnorms = np.linalg.norm(tfidfmat, axis=1, keepdims=True) 
     docnorms[docnorms==0] = 1
     tfidfmat = tfidfmat/docnorms

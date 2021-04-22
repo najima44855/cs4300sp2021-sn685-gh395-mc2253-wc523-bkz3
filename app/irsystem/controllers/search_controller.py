@@ -58,8 +58,9 @@ def home():
 		output_query = query
 		output_list = mlst
 		x = requests.post('https://manga-recs.herokuapp.com/api/', \
-			json = {'query': query.split(','), 'input_list': mlst.split(',')})
-		
+			json = {'query': [y.strip() for y in query.split(',')], \
+				'input_list': [y.strip() for y in mlst.split(',')]})
+
 		sim_data = x.json()['similar']
 		dis_data = x.json()['dissimilar']
 		sim_synopses = x.json()['similar_synopses']
@@ -138,11 +139,7 @@ def api():
 	tfidfquery = tfidf_vec.transform(query).toarray() 
 	#tfidf_vec.vocabulary_ to get the mappings of words to index 
 
-	num_manga, num_features = tfidfmatrix.shape 
-
-	index_to_manga_name = dict()
-	for i, manga_item in enumerate(manga_list.values()):
-		index_to_manga_name[i] = manga_item['title']
+	num_manga, num_features = tfidfmatrix.shape
 
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
 
