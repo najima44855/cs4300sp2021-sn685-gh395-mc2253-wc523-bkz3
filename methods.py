@@ -7,7 +7,7 @@ import pickle
 # Optional: add alternative names/titles to manga
 
 # Input Processing
-with open('dataset_500_d.pickle','rb') as f:
+with open('dataset_1000_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
 index_to_manga_name = dict()
