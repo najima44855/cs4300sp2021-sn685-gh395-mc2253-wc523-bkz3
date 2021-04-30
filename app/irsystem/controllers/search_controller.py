@@ -132,14 +132,16 @@ def api():
 	body = json.loads(request.data)
 	query = body.get('query')
 	input_list = body.get('input_list')
-
+	
 	tfidf_vec = TfidfVectorizer(stop_words='english')
 	#tfidf matrix for synopses
 	tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
-	tfidfquery = tfidf_vec.transform(query).toarray() 
-	#tfidf_vec.vocabulary_ to get the mappings of words to index 
-
 	num_manga, num_features = tfidfmatrix.shape
+	if len(query)>0:
+		tfidfquery = tfidf_vec.transform(query).toarray() 
+	else:
+		tfidfquery = np.zeros(num_features)
+	#tfidf_vec.vocabulary_ to get the mappings of words to index 	
 
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
 

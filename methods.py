@@ -16,6 +16,20 @@ for i, manga_item in enumerate(manga_list.values()):
     index_to_manga_name[i] = manga_item['title']
     index_to_manga[i] = (manga_item['synopsis'], manga_item['main_picture']['large'])
 
+manga_synonym_dict = dict() #manga title-> main title
+for manga_item in manga_list.values():
+    all_names = set()
+    main_title = manga_item['title']
+    all_names.add(main_title)
+    for title in manga_item['alternative_titles']['synonyms']:
+        all_names.add(title)
+    if manga_item['alternative_titles']['en'] != '':
+        all_names.add(manga_item['alternative_titles']['en'])
+    if manga_item['alternative_titles']['ja'] != '':
+        all_names.add(manga_item['alternative_titles']['ja']) 
+    for title in all_names:
+        manga_synonym_dict[title] = main_title
+
 """
 Given a manga, return the cosine similarity between the it and the query.
 Parameters:
@@ -59,7 +73,7 @@ e.g. index 0 of the array gives the cos sim score to manga 0
 """
 def cos_sim_rank(tfidfmat, tfidfq, idx, num_manga):
     if not tfidfq.any(): #no query
-        return np.arange(num_manga), np.zeros(num_manga)
+        return [], np.arange(num_manga), np.zeros(num_manga)
     docnorms = np.linalg.norm(tfidfmat, axis=1, keepdims=True) 
     docnorms[docnorms==0] = 1
     tfidfmat = tfidfmat/docnorms
@@ -110,12 +124,16 @@ e.g. index 0 of the array gives the jaccard sim score to manga 0
 """
 def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to_index_dict, idx, num_manga):
     if len(input_manga_list) == 0: #no input manga
-        return np.arrange(num_manga), np.zeros(num_manga)
+        return [], np.arrange(num_manga), np.zeros(num_manga)
 
     input_manga_list = list(set(input_manga_list)) #avoid dealing with duplicates
     #if genre in half or more of the manga in the input manga list, use the genre in the sim measure
     genre_count = defaultdict(int)
     for m in input_manga_list:
+        try:
+            m = manga_synonym_dict['m']
+        except:
+            continue
         for genre in input_manga_to_genre_dict[m]:
             genre_count[genre] += 1
     thresh = len(input_manga_list)/2 #change threshhold here
