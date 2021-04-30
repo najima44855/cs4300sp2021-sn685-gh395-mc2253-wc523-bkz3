@@ -39,8 +39,8 @@ def add_to_query(query):
     for word in query:
         new_query += query + " "
         if word in words_in_model:
-        for ele in model.wv.most_similar(word, topn=3):
-            new_query += ele[0] + " "
+            for ele in model.wv.most_similar(word, topn=3):
+                new_query += ele[0] + " "
     return new_query
 
 """
