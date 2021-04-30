@@ -51,21 +51,27 @@ def home():
 	sim_images = []
 	sim_scores = []
 
+	output_query = query
+	output_list = mlst
+	query_value = [y.strip() for y in query.split(',')]
+	input_list_value = [y.strip() for y in mlst.split(',')]
 	if not query:
 		output_query = ''
+		query_value = []
+	if not mlst:
+		input_list_value = []
 		output_list = ''
-	else:
-		output_query = query
-		output_list = mlst
-		x = requests.post('https://manga-recs.herokuapp.com/api/', \
-			json = {'query': [y.strip() for y in query.split(',')], \
-				'input_list': [y.strip() for y in mlst.split(',')]})
+	x = requests.post('https://manga-recs.herokuapp.com/api/', \
+		json = {'query': query_value, 'input_list': input_list_value})
+	#use when want to test on local machine
+	#x = requests.post('http://localhost:5000/api/', \
+	#	json = {'query': query_value, 'input_list': input_list_value})
 
-		sim_data = x.json()['similar']
-		dis_data = x.json()['dissimilar']
-		sim_synopses = x.json()['similar_synopses']
-		sim_images = x.json()['similar_images']
-		sim_scores = x.json()['similar_scores']
+	sim_data = x.json()['similar']
+	dis_data = x.json()['dissimilar']
+	sim_synopses = x.json()['similar_synopses']
+	sim_images = x.json()['similar_images']
+	sim_scores = x.json()['similar_scores']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_query=output_query, output_list=output_list, \
 		sim_data=sim_data, dis_data=dis_data, sim_synopses=sim_synopses, \
@@ -167,7 +173,7 @@ def api():
 	overall_rank_images = []
 	overall_rank_scores = []
 	for manga_idx in overall_rank_idx:
-		if index_to_manga_name[manga_idx] not in input_list:
+		if index_to_manga_name[manga_idx].lower() not in [y.lower() for y in input_list]:
 			overall_rank_names.append(index_to_manga_name[manga_idx])
 			overall_rank_synopses.append(index_to_manga[manga_idx][0])
 			overall_rank_images.append(index_to_manga[manga_idx][1])
