@@ -2,6 +2,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 import numpy as np 
 import pickle
+from gensim.models import Word2Vec
 
 # Todo: weighted similarity score, document embeddings
 # Optional: add alternative names/titles to manga
@@ -29,6 +30,18 @@ for manga_item in manga_list.values():
         all_names.add(manga_item['alternative_titles']['ja'].lower()) 
     for title in all_names:
         manga_synonym_dict[title] = main_title
+
+
+model = Word2Vec.load('word2vec.model')
+def add_to_query(query):
+    words_in_model= set(model.wv.key_to_index.keys())
+    new_query = ""
+    for word in query:
+        new_query += query + " "
+        if word in words_in_model:
+        for ele in model.wv.most_similar(word, topn=3):
+            new_query += ele[0] + " "
+    return new_query
 
 """
 Given a manga, return the cosine similarity between the it and the query.

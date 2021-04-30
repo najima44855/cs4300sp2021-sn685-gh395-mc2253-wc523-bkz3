@@ -144,7 +144,8 @@ def api():
 	tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
 	num_manga, num_features = tfidfmatrix.shape
 	if len(query)>0:
-		tfidfquery = tfidf_vec.transform(query).toarray() 
+		new_query = add_to_query(query)
+		tfidfquery = tfidf_vec.transform(new_query).toarray() 
 	else:
 		tfidfquery = np.zeros(num_features)
 	#tfidf_vec.vocabulary_ to get the mappings of words to index 	
