@@ -36,12 +36,12 @@ model = Word2Vec.load('word2vec.model')
 def add_to_query(query):
     words_in_model= set(model.wv.key_to_index.keys())
     new_query = ""
-    for word in query:
-        new_query += query + " "
+    for word in query.split(" "):
+        new_query += word + " "
         if word in words_in_model:
             for ele in model.wv.most_similar(word, topn=3):
                 new_query += ele[0] + " "
-    return new_query
+    return [new_query]
 
 """
 Given a manga, return the cosine similarity between the it and the query.
