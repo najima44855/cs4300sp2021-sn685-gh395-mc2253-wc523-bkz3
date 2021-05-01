@@ -39,7 +39,7 @@ def home():
 	sim_images = []
 	sim_scores = []
 
-	if not query:
+	if not query and not mlst:
 		output_query = ''
 		output_list = ''
 	else:
@@ -161,10 +161,11 @@ def api():
 	tfidf_vec = TfidfVectorizer(stop_words='english')
 	#tfidf matrix for synopses
 	tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
-	tfidfquery = tfidf_vec.transform(query).toarray() 
-	#tfidf_vec.vocabulary_ to get the mappings of words to index 
-
 	num_manga, num_features = tfidfmatrix.shape
+	if len(query)>0:
+		tfidfquery = tfidf_vec.transform(query).toarray() 
+	else:
+		tfidfquery = np.zeros(num_features)
 
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
 
