@@ -5,28 +5,22 @@ from app.accounts.controllers.users_controller import *
 from app.accounts.models.session import *
 from app.accounts.models.user import *
 from methods import *
-
 import secrets
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 import numpy as np 
 import requests
 import pickle
-
 project_name = 'Manga Recs'
 net_id = 'Shungo Najima: sn685, Gary Ho: gh395, Michael Chen: mc2253, Winston Chen: wc523, Brian Zhu: bkz3'
-
 def extract_token(request):
 	auth_header = request.headers.get('Authorization')
 	if auth_header is None:
 		return False, json.dumps({"error": "Missing Authorization token"})
-
 	bearer_token = auth_header.replace("Bearer ", "").strip()
 	if bearer_token is None or not bearer_token:
 		return False, json.dumps({"error": "Invalid Authorization header"})
-
 	return True, bearer_token
-
 # @irsystem.route('/', methods=['GET'])
 # def home():
 # 	query = request.args.get('search')
@@ -40,7 +34,6 @@ def extract_token(request):
 # 		data = range(5)
 # 	return render_template('search.html', name=project_name, \
 # 		netid=net_id, output_message=output_message, data=data)
-
 @irsystem.route('/', methods=['GET'])
 def home():
 	query = request.args.get('query')
@@ -50,28 +43,34 @@ def home():
 	sim_synopses = []
 	sim_images = []
 	sim_scores = []
-
-	output_query = query
-	output_list = mlst
-	query_value = [y.strip() for y in query.split(',')]
-	input_list_value = [y.strip() for y in mlst.split(',')]
-	if not query:
+	
+	if not query and not mlst:
 		output_query = ''
-		query_value = []
-	if not mlst:
-		input_list_value = []
 		output_list = ''
-	x = requests.post('https://manga-recs.herokuapp.com/api/', \
-		json = {'query': query_value, 'input_list': input_list_value})
-	#use when want to test on local machine
-	#x = requests.post('http://localhost:5000/api/', \
-	#	json = {'query': query_value, 'input_list': input_list_value})
+	else:
+		output_query = query
+		output_list = mlst
+		query_value = [y.strip() for y in query.split(',')]
+		input_list_value = [y.strip() for y in mlst.split(',')]
+		if not query:
+			output_query = ''
+			query_value = []
+		if not mlst:
+			input_list_value = []
+			output_list = ''
+		output_query = query
+		output_list = mlst
+		#x = requests.post('https://manga-recs.herokuapp.com/api/', \
+		#	json = {'query': query_value, 'input_list': input_list_value})
+		#use when want to test on local machine
+		x = requests.post('http://localhost:5000/api/', \
+			json = {'query': query_value, 'input_list': input_list_value})
 
-	sim_data = x.json()['similar']
-	dis_data = x.json()['dissimilar']
-	sim_synopses = x.json()['similar_synopses']
-	sim_images = x.json()['similar_images']
-	sim_scores = x.json()['similar_scores']
+		sim_data = x.json()['similar']
+		dis_data = x.json()['dissimilar']
+		sim_synopses = x.json()['similar_synopses']
+		sim_images = x.json()['similar_images']
+		sim_scores = x.json()['similar_scores']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_query=output_query, output_list=output_list, \
 		sim_data=sim_data, dis_data=dis_data, sim_synopses=sim_synopses, \
@@ -88,17 +87,13 @@ def register_account():
 	fname = body.get('fname')
 	lname = body.get('lname')
 	password = body.get('password')
-
 	if email is None or fname is None or lname is None or password is None:
 		return json.dumps({'error': 'Invalid email, name(s) or password'})
 	
 	was_created, user = create_user(email, fname, lname, password)
-
 	if not was_created: 
 		return json.dumps({'error': 'User already exists'})
-
 	sess = get_session_by_user_id(user.id)
-
 	return json.dumps(
 		{
 			'session_token': sess.session_token,
@@ -107,23 +102,17 @@ def register_account():
 		},
 		default = myconverter
 	)
-
 @irsystem.route('/login/', methods=['POST'])
 def login():
 	body = json.loads(request.data)
 	email = body.get('email')
 	password = body.get('password')
-
 	if email is None or password is None:
 		return json.dumps({'error': 'Invalid email or password'})
-
 	was_successful, user = verify_credentials(email, password)
-
 	if not was_successful:
 		return json.dumps({'error': 'Incorrect email or password'})
-
 	sess = get_session_by_user_id(user.id)
-
 	return json.dumps(
 		{
 			'session_token': sess.session_token,
@@ -132,7 +121,6 @@ def login():
 		},
 		default = myconverter
 	)
-
 @irsystem.route('/api/', methods=['POST'])
 def api():
 	body = json.loads(request.data)
@@ -144,14 +132,11 @@ def api():
 	tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
 	num_manga, num_features = tfidfmatrix.shape
 	if len(query)>0:
-		new_query = add_to_query(query)
-		tfidfquery = tfidf_vec.transform(new_query).toarray() 
+		tfidfquery = tfidf_vec.transform(query).toarray() 
 	else:
 		tfidfquery = np.zeros(num_features)
 	#tfidf_vec.vocabulary_ to get the mappings of words to index 	
-
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
-
 	#keys = manga names, values= genre list
 	manga_to_genre_dict= dict()
 	for manga_item in manga_list.values():
@@ -159,14 +144,11 @@ def api():
 		if 'genres' in manga_item:
 			for genre in manga_item['genres']:
 				manga_to_genre_dict[manga_item['title']].add(genre['name'])
-
 	cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = \
 		cos_sim_rank(tfidfmatrix, tfidfquery, index_to_manga_name, num_manga)
-
 	jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = \
 		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index, \
 		index_to_manga_name, num_manga)
-
 	combined_scores = cos_sim_scores + 0.25 * jac_sim_scores
 	overall_rank_idx = combined_scores.argsort()[::-1]
 	overall_rank_names = []
@@ -192,7 +174,6 @@ def api():
 			'dissimilar_scores': overall_rank_scores[-10:]
 		}
 	)
-
 # @irsystem.route('/connect/', methods=['GET'])
 # def connect():
 # 	code_verifier = secrets.token_urlsafe(100)[:128]
@@ -200,35 +181,16 @@ def api():
 # 		+ '&client_id=' + str(os.environ["CLIENT_ID"]) + '&code_challenge=' \
 # 		+ str(code_verifier) + '&state=RequestID42'
 # 	print('Go to the following URL:', user_auth_url)
-
 # @irsystem.route('/oauth/', methods=['GET'])
 # def oauth():
 # 	code = request.args.get('code')
 #   password = request.args.get('password')
-
 @irsystem.route('/session/', methods=['POST'])
 def session():
 	was_successful, update_token = extract_token(request)
-
 	if not was_successful:
 		return update_token
-
 	try:
 		user = sessions_controller.renew_session(update_token)
 	except Exception as e:
 		return json.dumps({'error': f"Invalid update token: {str(e)}"})
-
-	sess = get_session_by_user_id(user.id)
-
-	return json.dumps(
-		{
-			'session_token': sess.session_token,
-			'update_token': sess.update_token,
-			'expires_at': sess.expires_at
-		},
-		default = myconverter
-	)
-
-# @irsystem.route('/search/', methods=['GET'])
-# def search():
-
