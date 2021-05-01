@@ -57,7 +57,7 @@ def home():
 	else:
 		output_query = query
 		output_list = mlst
-		x = requests.post('https://manga-recs.herokuapp.com/api/', \
+		x = requests.post('https://manga-recs-2.herokuapp.com/api/', \
 			json = {'query': [y.strip() for y in query.split(',')], \
 				'input_list': [y.strip() for y in mlst.split(',')]})
 
