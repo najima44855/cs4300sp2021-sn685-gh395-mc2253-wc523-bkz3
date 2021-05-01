@@ -2,14 +2,78 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 import numpy as np 
 import pickle
+import requests
+import secrets
+import os
+import json
 from gensim.models import Word2Vec
 
 # Todo: weighted similarity score, document embeddings
 # Optional: add alternative names/titles to manga
 
 # Input Processing
-with open('dataset_1000_d.pickle','rb') as f:
-    manga_list = pickle.load(f) #a dictionary
+# with open('dataset_1000_d.pickle','rb') as f:
+#    manga_list = pickle.load(f) # a dictionary
+
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
+
+# Generate new code verifier and code challenge (a randomly generated string 
+# 128 characters long)
+token = secrets.token_urlsafe(100)
+token = token[:128]
+
+url = f'https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id={CLIENT_ID}&code_challenge={token}'
+print(f'Use this url to authroize the application: {url}\n')
+authorisation_code = input('Please enter the Authorisation Code: ').strip()
+
+AUTH_URL = 'https://myanimelist.net/v1/oauth2/token'
+auth_response = requests.post(AUTH_URL, {
+    'client_id': CLIENT_ID,
+    'client_secret': CLIENT_SECRET,
+    'code': authorisation_code,
+    'code_verifier': token,
+    'grant_type': 'authorization_code'
+})
+# print('\n')
+# print(auth_response)
+# print('\n')
+
+# Convert the response to json
+auth_response_data = auth_response.json()
+# auth_response.close()
+# print(auth_response_data)
+
+# Save the access and refresh tokens
+access_token = auth_response_data['access_token']
+refresh_token = auth_response_data['refresh_token']
+# print(f"access token: {access_token}")
+# print(f"refresh token: {refresh_token}")
+
+# Request the top 1000 manga by ranking (needs 2 calls)
+ranking_url_1 = 'https://api.myanimelist.net/v2/manga/ranking?ranking_type=manga&limit=500'
+ranking_url_2 = 'https://api.myanimelist.net/v2/manga/ranking?ranking_type=manga&limit=500&offset=500'
+header = {
+    'Authorization': f'Bearer {access_token}'
+}
+# print(f"header: {header}")
+
+ranking_response_1 = requests.get(ranking_url_1, headers = header)
+ranking_1 = ranking_response_1.json()
+# ranking_response_1.close()
+
+ranking_response_2 = requests.get(ranking_url_2, headers = header)
+ranking_2 = ranking_response_2.json()
+# ranking_response_2.close()
+
+# print(ranking_1)
+# print(ranking_2)
+
+manga_list= dict()
+
+for x in ranking_1['data']:
+    manga_list[x["ranking"]["rank"]] = x["node"]
+print(list(manga_list.values())[:10])
 
 index_to_manga_name = dict()
 index_to_manga = dict()
