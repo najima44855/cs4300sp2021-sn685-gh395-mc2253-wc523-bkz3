@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="main">
+    <h1 class="title" style="text-transform: none; letter-spacing: 0.01em;">
+    Welcome, {{ name }}!
+    </h1>
+
+    <article class="post featured">
+        <header class="major">
+            <span class="date">Your Favorites</span>
+            <div id="favorites">
+            </div>
+        </header>
+    </article>
+</div>
+{% endblock %}

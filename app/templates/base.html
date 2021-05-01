@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body>
+    <div id="wrapper">
+        <nav id="nav">
+            <ul class="links">
+                <li class="{{ home_class }}">
+                    <a href="{{ url_for('irsystem.home') }}" class="navbar-item">
+                        Look for Manga!
+                    </a>
+                </li>
+                
+                
+                {% if current_user.is_authenticated %}
+                <li class="{{ profile_class }}">
+                    <a href="{{ url_for('irsystem.profile') }}" class="navbar-item">
+                        Profile
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if not current_user.is_authenticated %}
+                <li class="{{ login_class }}">
+                    <a href="{{ url_for('irsystem.login') }}" class="navbar-item">
+                        Login
+                    </a>
+                </li>
+
+                <li class="{{ register_class }}">
+                    <a href="{{ url_for('irsystem.register') }}" class="navbar-item">
+                        Sign Up
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
+                <li class="{{ logout_class }}">
+                    <a href="{{ url_for('irsystem.logout') }}" class="navbar-item">
+                        Logout
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>>
+</body>
+
+</html>

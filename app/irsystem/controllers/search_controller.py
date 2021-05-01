@@ -5,6 +5,7 @@ from app.accounts.controllers.users_controller import *
 from app.accounts.models.session import *
 from app.accounts.models.user import *
 from methods import *
+from flask_login import login_user, login_required, current_user, logout_user
 
 import secrets
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -27,26 +28,13 @@ def extract_token(request):
 
 	return True, bearer_token
 
-# @irsystem.route('/', methods=['GET'])
-# def home():
-# 	query = request.args.get('search')
-# 	if not query:
-# 		print('bruh')
-# 		data = []
-# 		output_message = ''
-# 	else:
-# 		print('boi')
-# 		output_message = 'Your search: ' + query
-# 		data = range(5)
-# 	return render_template('search.html', name=project_name, \
-# 		netid=net_id, output_message=output_message, data=data)
-
 @irsystem.route('/', methods=['GET'])
 def home():
 	query = request.args.get('query')
 	mlst = request.args.get('input_list')
 	sim_data = []
 	dis_data = []
+	sim_stripped = []
 	sim_synopses = []
 	sim_images = []
 	sim_scores = []
@@ -57,74 +45,101 @@ def home():
 	else:
 		output_query = query
 		output_list = mlst
-		x = requests.post('https://manga-recs.herokuapp.com/api/', \
-			json = {'query': [y.strip() for y in query.split(',')], \
+		x = requests.post('http://localhost:5000/api/', \
+			json = {'query': [query], \
 				'input_list': [y.strip() for y in mlst.split(',')]})
 
 		sim_data = x.json()['similar']
 		dis_data = x.json()['dissimilar']
+		sim_stripped = [x.replace(" ", "") for x in sim_data]
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_query=output_query, output_list=output_list, \
-		sim_data=sim_data, dis_data=dis_data, sim_synopses=sim_synopses, \
-		sim_images=sim_images, sim_scores=sim_scores, len=len(sim_data))
+		sim_data=sim_data, dis_data=dis_data, sim_stripped=sim_stripped, \
+		sim_synopses=sim_synopses, sim_images=sim_images, \
+		sim_scores=sim_scores, len=len(sim_data), \
+		home_class="active", profile_class = "", login_class = "", \
+		register_class = "", logout_class = "")
 
 def myconverter(o):
 	if isinstance(o, datetime.datetime):
 		return o.__str__()
 
+@irsystem.route('/register/', methods=['GET'])
+def register():
+	return render_template('signup.html', \
+		home_class="", profile_class = "", login_class = "", \
+		register_class = "active", logout_class = "")
+
 @irsystem.route('/register/', methods=['POST'])
 def register_account():
-	body = json.loads(request.data)
-	email = body.get('email')
-	fname = body.get('fname')
-	lname = body.get('lname')
-	password = body.get('password')
+	username = request.form.get('username')
+	fname = request.form.get('fname')
+	lname = request.form.get('lname')
+	password = request.form.get('password')
 
-	if email is None or fname is None or lname is None or password is None:
-		return json.dumps({'error': 'Invalid email, name(s) or password'})
+	if username == '' or fname == '' or lname == '' or password == '':
+		flash('Please enter a username, first/last name, and password')
+		return redirect(url_for('irsystem.register'))
 	
-	was_created, user = create_user(email, fname, lname, password)
+	was_created, user = create_user(username, fname, lname, password)
 
 	if not was_created: 
-		return json.dumps({'error': 'User already exists'})
+		flash('That username is already taken')
+		return redirect(url_for('irsystem.register'))
 
 	sess = get_session_by_user_id(user.id)
+	return redirect(url_for('irsystem.login'))
 
-	return json.dumps(
-		{
-			'session_token': sess.session_token,
-			'update_token': sess.update_token,
-			'expires_at': sess.expires_at
-		},
-		default = myconverter
-	)
+@irsystem.route('/login/', methods=['GET'])
+def login():
+	return render_template('login.html', \
+		home_class="", profile_class = "", login_class = "active", \
+		register_class = "", logout_class = "")
 
 @irsystem.route('/login/', methods=['POST'])
-def login():
-	body = json.loads(request.data)
-	email = body.get('email')
-	password = body.get('password')
+def login_post():
+	username = request.form.get('username')
+	password = request.form.get('password')
+	remember = True if request.form.get('remember') else False
 
-	if email is None or password is None:
-		return json.dumps({'error': 'Invalid email or password'})
+	if username == '' or password == '':
+		flash('Please enter a username and password.')
+		return redirect(url_for('irsystem.login'))
 
-	was_successful, user = verify_credentials(email, password)
+	was_successful, user = verify_credentials(username, password)
 
 	if not was_successful:
-		return json.dumps({'error': 'Incorrect email or password'})
+		flash('Incorrect username and/or password.')
+		return redirect(url_for('irsystem.login'))
 
-	sess = get_session_by_user_id(user.id)
+	login_user(user, remember=remember)
+	return redirect(url_for('irsystem.profile'))
 
+@irsystem.route('/logout/', methods=['GET'])
+def logout():
+	logout_user()
+	return redirect(url_for('irsystem.home'))
+	
+@irsystem.route('/profile/', methods=['GET'])
+def profile():
+	return render_template('profile.html', name=current_user.fname, \
+		home_class="", profile_class = "active", login_class = "", \
+		register_class = "", logout_class = "")
+		# sim_data=sim_data, \
+		# sim_images=sim_images, len=len(sim_data))
+
+@irsystem.route('/favorite/', methods=['POST'])
+def favorite():
+	body = json.loads(request.data)
+	print("bruhh")
+	print(body)
 	return json.dumps(
 		{
-			'session_token': sess.session_token,
-			'update_token': sess.update_token,
-			'expires_at': sess.expires_at
-		},
-		default = myconverter
+			'ba': 'pog'
+		}
 	)
 
 @irsystem.route('/api/', methods=['POST'])
@@ -219,7 +234,3 @@ def session():
 		},
 		default = myconverter
 	)
-
-# @irsystem.route('/search/', methods=['GET'])
-# def search():
-

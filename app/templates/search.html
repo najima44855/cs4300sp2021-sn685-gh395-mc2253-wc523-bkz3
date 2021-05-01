@@ -1,69 +1,72 @@
-<!DOCTYPE HTML>
-<!--
-	Massively by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-<html>
-	<head>
-		<title>Manga Recs</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="/static/bootstrap.min.css">
-		<link rel="stylesheet" href="/static/main.css">
-	</head>
-	<body class="is-preload">
+<head>
+    <title>Search</title>
+</head>
 
-        <!-- Wrapper -->
-        <div id="wrapper" class="fade-in">
+{% extends "base.html" %}
 
-            <!-- Main -->
-            <div id="main">
-                <div class="topcorner">
-                    <h1>{{ name }}</h1>
-                    <p>Made by: ({{ netid }})</p>
-                </div>
+{% block content %}
+<div id="main">
+    <div class="topcorner">
+        <h1>{{ name }}</h1>
+        <p>Made by: ({{ netid }})</p>
+    </div>
 
-                <form class="form-inline global-search">
-                    <div class="form-group">
-                        <input id="input" type="text" name="query" class="form-control" placeholder="Keywords...">
-                        <input id="input" type="text" name="input_list" class="form-control" placeholder="Manga titles...">
-                    </div>
-                    <button type="submit" class="btn btn-info"> Go! </button>
-                </form>
-
-                {% if sim_data %}
-                <!-- Featured Post -->
-                    <article class="post featured">
-                        <header class="major">
-                            <span class="date">Search Results</span>
-                            <p>Keywords: {{output_query}}</p>
-                            <p>Input list: {{output_list}}</p>
-
-                            <p style="font-size: 25px;">Top 10 similar mangas:</p>
-                        </header>
-                    </article>
-
-                    <!-- Posts -->
-                    <section class="posts">
-                        {% for i in range(0, len) %} 
-                            <article>
-                                <header>
-                                    <h2><a href="#">{{sim_data[i]}}</a></h2>
-                                    <!-- <span class="date">Similarity score: {{sim_scores[i]}}</span> -->
-                                </header>
-                                <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
-                                <p>Synopsis:</p>
-                                <p>{{sim_synopses[i]}}</p>
-                                <ul class="actions special">
-                                    <li><a href="#" class="button">Add to favorites</a></li>
-                                </ul>
-                            </article>
-                        {% endfor %}
-                    
-                    </section>
-                {% endif %}
-            </div>
+    <form class="form-inline global-search">
+        <div class="form-group">
+            <input id="input" type="text" name="query" class="form-control" placeholder="Keywords...">
+            <input id="input" type="text" name="input_list" class="form-control" placeholder="Manga titles...">
         </div>
-    </body>
-</html>
+        <button type="submit" class="btn btn-info"> Go! </button>
+    </form>
+
+    {% if sim_data %}
+        <article class="post featured">
+            <header class="major">
+                <span class="date">Search Results</span>
+                <p>Keywords: {{output_query}}</p>
+                <p>Input list: {{output_list}}</p>
+
+                <p style="font-size: 25px;">Top 10 similar mangas:</p>
+            </header>
+        </article>
+
+        <section class="posts">
+            {% for i in range(0, len) %} 
+                <article>
+                    <header>
+                        <h2><a href="#">{{sim_data[i]}}</a></h2>
+                        <span class="date">Similarity score: {{sim_scores[i]}}</span>
+                    </header>
+                    <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
+                    <p>Synopsis:</p>
+                    <p>{{sim_synopses[i]}}</p>
+                    {% if current_user.is_authenticated %}
+
+                    <form action="/favorite/" method="post">
+                        <input type="submit" onclick="addToFavorites()" value="Add to favorites">
+
+                        <script>
+                            function addToFavorites() {
+                                var params = {
+                                    "title": "{{sim_stripped[i]}}",
+                                    "user_id": 2
+                                };
+                                var xhttp = new XMLHttpRequest();
+                                xhttp.onreadystatechange = function() {
+                                    if (this.readyState == 4 && this.status == 200) {
+                                    document.getElementById("demo").innerHTML = this.responseText;
+                                    }
+                                };
+                                xhttp.open("POST", "http://localhost:5000/favorite/");
+                                xhttp.send(JSON.stringify(params));
+                            }
+                        </script>
+                    </form>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

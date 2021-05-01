@@ -3,8 +3,8 @@ from ..models.user import *
 from ..models.session import *
 from app import db
 
-def get_user_by_email(email):
-    return User.query.filter(User.email == email).first()
+def get_user_by_username(username):
+    return User.query.filter(User.username == username).first()
 
 def get_user_by_session_token(session_token):
     return User.query.filter(User.session_token == session_token).first()
@@ -12,22 +12,22 @@ def get_user_by_session_token(session_token):
 def get_user_by_update_token(update_token):
     return User.query.filter(User.update_token == update_token).first()
 
-def verify_credentials(email, password):
-    optional_user = get_user_by_email(email)
+def verify_credentials(username, password):
+    optional_user = get_user_by_username(username)
 
     if optional_user is None:
         return False, None
 
     return optional_user.verify_password(password), optional_user
 
-def login(email, password):
-    if email is None or password is None: 
-        return json.dumps({"error": "Invalid email or password"})
+def login(username, password):
+    if username is None or password is None: 
+        return json.dumps({"error": "Invalid username or password"})
 
-    was_successful, user = verify_credentials(email, password)
+    was_successful, user = verify_credentials(username, password)
 
     if not was_successful:
-        return json.dumps({"error": "Incorrect email or password"})
+        return json.dumps({"error": "Incorrect username or password"})
 
     session = get_session_by_user_id(user.id)
 
@@ -40,13 +40,13 @@ def login(email, password):
         }
     )
 
-def create_user(email, fname, lname, password):
-    optional_user = get_user_by_email(email)
+def create_user(username, fname, lname, password):
+    optional_user = get_user_by_username(username)
 
     if optional_user is not None:
         return False, optional_user
 
-    user = User(email=email, fname=fname, lname=lname, password=password)
+    user = User(username=username, fname=fname, lname=lname, password=password)
     db.session.add(user)
     db.session.commit()
     

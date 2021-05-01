@@ -7,6 +7,7 @@ import os
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
+from flask_login import LoginManager
 
 # Configure app
 socketio = SocketIO()
@@ -25,6 +26,19 @@ app.register_blueprint(irsystem)
 
 # Initialize app w/SocketIO
 socketio.init_app(app)
+
+# Initialize LoginManager
+
+login_manager = LoginManager()
+login_manager.login_view = 'irsystem.login'
+login_manager.init_app(app)
+
+from app.accounts.models.user import *
+
+@login_manager.user_loader
+def load_user(user_id):
+# since the user_id is just the primary key of our user table, use it in the query for the user
+  return User.query.get(int(user_id))
 
 # HTTP error handling
 @app.errorhandler(404)
