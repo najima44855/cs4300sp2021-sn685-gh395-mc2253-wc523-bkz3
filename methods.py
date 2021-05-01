@@ -2,6 +2,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 import numpy as np 
 import pickle
+from gensim.models import Word2Vec
 
 # Todo: weighted similarity score, document embeddings
 # Optional: add alternative names/titles to manga
@@ -15,6 +16,32 @@ index_to_manga = dict()
 for i, manga_item in enumerate(manga_list.values()):
     index_to_manga_name[i] = manga_item['title']
     index_to_manga[i] = (manga_item['synopsis'], manga_item['main_picture']['large'])
+
+manga_synonym_dict = dict() #manga title-> main title
+for manga_item in manga_list.values():
+    all_names = set()
+    main_title = manga_item['title']
+    all_names.add(main_title.lower())
+    for title in manga_item['alternative_titles']['synonyms']:
+        all_names.add(title.lower())
+    if manga_item['alternative_titles']['en'] != '':
+        all_names.add(manga_item['alternative_titles']['en'].lower())
+    if manga_item['alternative_titles']['ja'] != '':
+        all_names.add(manga_item['alternative_titles']['ja'].lower()) 
+    for title in all_names:
+        manga_synonym_dict[title] = main_title
+
+
+model = Word2Vec.load('word2vec.model')
+def add_to_query(query):
+    words_in_model= set(model.wv.key_to_index.keys())
+    new_query = ""
+    for word in query:
+        new_query += query + " "
+        if word in words_in_model:
+            for ele in model.wv.most_similar(word, topn=3):
+                new_query += ele[0] + " "
+    return new_query
 
 """
 Given a manga, return the cosine similarity between the it and the query.
@@ -59,7 +86,7 @@ e.g. index 0 of the array gives the cos sim score to manga 0
 """
 def cos_sim_rank(tfidfmat, tfidfq, idx, num_manga):
     if not tfidfq.any(): #no query
-        return np.arange(num_manga), np.zeros(num_manga)
+        return [], np.arange(num_manga), np.zeros(num_manga)
     docnorms = np.linalg.norm(tfidfmat, axis=1, keepdims=True) 
     docnorms[docnorms==0] = 1
     tfidfmat = tfidfmat/docnorms
@@ -110,14 +137,18 @@ e.g. index 0 of the array gives the jaccard sim score to manga 0
 """
 def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to_index_dict, idx, num_manga):
     if len(input_manga_list) == 0: #no input manga
-        return np.arrange(num_manga), np.zeros(num_manga)
+        return [], np.arange(num_manga), np.zeros(num_manga)
 
     input_manga_list = list(set(input_manga_list)) #avoid dealing with duplicates
     #if genre in half or more of the manga in the input manga list, use the genre in the sim measure
     genre_count = defaultdict(int)
     for m in input_manga_list:
-        for genre in input_manga_to_genre_dict[m]:
-            genre_count[genre] += 1
+        try:
+            m = manga_synonym_dict[m.lower()]
+            for genre in input_manga_to_genre_dict[m]:
+                genre_count[genre] += 1
+        except:
+            continue
     thresh = len(input_manga_list)/2 #change threshhold here
 
     common_genres = set()

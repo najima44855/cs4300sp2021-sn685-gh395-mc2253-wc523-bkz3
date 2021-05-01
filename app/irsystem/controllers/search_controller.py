@@ -45,9 +45,19 @@ def home():
 	else:
 		output_query = query
 		output_list = mlst
+		query_value = query
+		input_list_value = [y.strip() for y in mlst.split(',')]
+		if not query:
+			output_query = ''
+			query_value = []
+		if not mlst:
+			input_list_value = []
+			output_list = ''
+		output_query = query
+		output_list = mlst
 		x = requests.post('http://localhost:5000/api/', \
-			json = {'query': [query], \
-				'input_list': [y.strip() for y in mlst.split(',')]})
+			json = {'query': query_value, \
+				'input_list': input_list_value})
 
 		sim_data = x.json()['similar']
 		dis_data = x.json()['dissimilar']
