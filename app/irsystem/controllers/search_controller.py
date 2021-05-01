@@ -164,7 +164,7 @@ def api():
 	num_manga, num_features = tfidfmatrix.shape
 	if len(query)>0:
 		new_query = add_to_query(query)
-    	tfidfquery = tfidf_vec.transform(new_query).toarray()
+		tfidfquery = tfidf_vec.transform(new_query).toarray()
 	else:
 		tfidfquery = np.zeros(num_features)
 
