@@ -179,18 +179,19 @@ e.g. index 0 of the array gives the jaccard sim score to manga 0
 """
 def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to_index_dict, idx, num_manga):
     if len(input_manga_list) == 0: #no input manga
-        return [], np.arange(num_manga), np.zeros(num_manga)
+        return [], np.arange(num_manga), np.zeros(num_manga), []
 
     input_manga_list = list(set(input_manga_list)) #avoid dealing with duplicates
     #if genre in half or more of the manga in the input manga list, use the genre in the sim measure
     genre_count = defaultdict(int)
+    unmatched_manga = []
     for m in input_manga_list:
-        try:
+        if m.lower() in manga_synonym_dict:
             m = manga_synonym_dict[m.lower()]
             for genre in input_manga_to_genre_dict[m]:
                 genre_count[genre] += 1
-        except:
-            continue
+        else:
+            unmatched_manga.append(m)
     thresh = len(input_manga_list)/2 #change threshhold here
 
     common_genres = set()
@@ -208,4 +209,4 @@ def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to
     results = []
     for manga_idx in jac_scores.argsort()[::-1]:
         results.append(idx[manga_idx])
-    return results, jac_scores.argsort()[::-1], jac_scores
+    return results, jac_scores.argsort()[::-1], jac_scores, unmatched_manga
