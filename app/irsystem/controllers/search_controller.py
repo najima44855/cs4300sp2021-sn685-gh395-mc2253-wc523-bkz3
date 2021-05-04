@@ -163,9 +163,11 @@ def api():
 	tfidfmatrix = tfidf_vec.fit_transform([d['synopsis'] for d in manga_list.values()]).toarray() 
 	num_manga, num_features = tfidfmatrix.shape
 	if len(query)>0:
-		new_query = add_to_query(query)
+		new_query, orig_query, sim_query = add_to_query(query)
 		tfidfquery = tfidf_vec.transform(new_query).toarray()
 	else:
+		orig_query = set()
+		sim_query = set()
 		tfidfquery = np.zeros(num_features)
 
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
@@ -193,9 +195,10 @@ def api():
 	overall_rank_scores = []
 	for manga_idx in overall_rank_idx:
 		if index_to_manga_name[manga_idx] not in input_list:
+			index_to_manga_synopsis[manga_idx] = highlight(orig_query, sim_query, index_to_manga_synopsis[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
-			overall_rank_synopses.append(index_to_manga[manga_idx][0])
-			overall_rank_images.append(index_to_manga[manga_idx][1])
+			overall_rank_synopses.append(index_to_manga_synopsis[manga_idx])
+			overall_rank_images.append(index_to_manga_pic[manga_idx])
 			overall_rank_scores.append(combined_scores[manga_idx])
 	
 	return json.dumps(

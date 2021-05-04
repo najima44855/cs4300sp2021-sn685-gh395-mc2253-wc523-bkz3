@@ -39,7 +39,7 @@
                     </header>
                     <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
                     <p>Synopsis:</p>
-                    <p>{{sim_synopses[i]}}</p>
+                    <p>{{sim_synopses[i]|safe}}</p>
                     {% if current_user.is_authenticated %}
 
                     <form action="/favorite/" method="post">
