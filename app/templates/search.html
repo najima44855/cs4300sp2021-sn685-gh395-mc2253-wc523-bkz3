@@ -40,6 +40,13 @@
                     <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
                     <p>Synopsis:</p>
                     <p>{{sim_synopses[i]|safe}}</p>
+                    {% if pmatch_keyword[i]-pmatch_mlist[i] > 25 %}
+                    <p>We suggested this manga because of keyword (or similar keyword) similarity.</p>
+                    {% elif pmatch_keyword[i]-pmatch_mlist[i] < -25 %}
+                    <p>We suggested this manga because of similarity to input manga.</p>
+                    {% else %}
+                    <p>We suggested this manga because of a mix between similarity to input manga and keyword similarity.</p>
+                    {% endif %}
                     {% if current_user.is_authenticated %}
 
                     <form action="/favorite/" method="post">

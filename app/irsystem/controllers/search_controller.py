@@ -38,6 +38,8 @@ def home():
 	sim_synopses = []
 	sim_images = []
 	sim_scores = []
+	pmatch_keyword =[]
+	pmatch_mlist = []
 
 	if not query and not mlst:
 		output_query = ''
@@ -55,7 +57,7 @@ def home():
 			output_list = ''
 		output_query = query
 		output_list = mlst
-		x = requests.post('https://manga-recs.herokuapp.com/api/', \
+		x = requests.post('http://localhost:5000/api/', \
 			json = {'query': query_value, \
 				'input_list': input_list_value})
 
@@ -65,12 +67,14 @@ def home():
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
+		pmatch_keyword = x.json()['pmatch_keyword']
+		pmatch_mlist = x.json()['pmatch_mlist']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_query=output_query, output_list=output_list, \
 		sim_data=sim_data, dis_data=dis_data, sim_stripped=sim_stripped, \
 		sim_synopses=sim_synopses, sim_images=sim_images, \
-		sim_scores=sim_scores, len=len(sim_data), \
-		home_class="active", profile_class = "", login_class = "", \
+		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
+		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
 		register_class = "", logout_class = "")
 
 def myconverter(o):
@@ -187,19 +191,24 @@ def api():
 		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index, \
 		index_to_manga_name, num_manga)
 
+	input_list_lower = [i.lower() for i in input_list]
 	combined_scores = cos_sim_scores + 0.25 * jac_sim_scores
 	overall_rank_idx = combined_scores.argsort()[::-1]
 	overall_rank_names = []
 	overall_rank_synopses = []
 	overall_rank_images = []
 	overall_rank_scores = []
+	percent_match_keyword = []
+	percent_match_mlist = []
 	for manga_idx in overall_rank_idx:
-		if index_to_manga_name[manga_idx] not in input_list:
+		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
 			index_to_manga_synopsis[manga_idx] = highlight(orig_query, sim_query, index_to_manga_synopsis[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
 			overall_rank_synopses.append(index_to_manga_synopsis[manga_idx])
 			overall_rank_images.append(index_to_manga_pic[manga_idx])
 			overall_rank_scores.append(combined_scores[manga_idx])
+			percent_match_keyword.append(cos_sim_scores[manga_idx]/combined_scores[manga_idx]*100)
+			percent_match_mlist.append(jac_sim_scores[manga_idx]*0.25/combined_scores[manga_idx]*100)
 	
 	return json.dumps(
 		{
@@ -210,7 +219,9 @@ def api():
 			'similar_images': overall_rank_images[:10],
 			'dissimilar_images': overall_rank_images[-10:],
 			'similar_scores': overall_rank_scores[:10],
-			'dissimilar_scores': overall_rank_scores[-10:]
+			'dissimilar_scores': overall_rank_scores[-10:],
+			'pmatch_keyword': percent_match_keyword[:10],
+			'pmatch_mlist': percent_match_mlist[:10]
 		}
 	)
 
