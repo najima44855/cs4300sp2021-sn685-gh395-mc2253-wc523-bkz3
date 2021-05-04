@@ -219,7 +219,10 @@ def api():
 	else:
 		has_match = True
 
+	count = 0
 	for manga_idx in overall_rank_idx:
+		if count == 10:
+			break
 		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
 			d1[manga_idx] = highlight(orig_query, sim_query, d1[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
@@ -232,22 +235,19 @@ def api():
 			else:
 				percent_match_keyword.append(0) #just to avoid errors in terminal
 				percent_match_mlist.append(0)
+			count += 1
 
 	return json.dumps(
 		{
 			'has_match': has_match,
 			'unmatched_manga': unmatched_manga,
 			'similar_keywords': sim_query,
-			'similar': overall_rank_names[:10],
-			'dissimilar': overall_rank_names[-10:],
-			'similar_synopses': overall_rank_synopses[:10],
-			'dissimilar_synopses': overall_rank_synopses[-10:],
-			'similar_images': overall_rank_images[:10],
-			'dissimilar_images': overall_rank_images[-10:],
-			'similar_scores': overall_rank_scores[:10],
-			'dissimilar_scores': overall_rank_scores[-10:],
-			'pmatch_keyword': percent_match_keyword[:10],
-			'pmatch_mlist': percent_match_mlist[:10]
+			'similar': overall_rank_names,
+			'similar_synopses': overall_rank_synopses,
+			'similar_images': overall_rank_images,
+			'similar_scores': overall_rank_scores,
+			'pmatch_keyword': percent_match_keyword,
+			'pmatch_mlist': percent_match_mlist
 		}
 	)
 
