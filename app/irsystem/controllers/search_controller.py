@@ -34,6 +34,9 @@ def extract_token(request):
 def home():
 	query = request.args.get('query')
 	mlst = request.args.get('input_list')
+	has_match = False
+	sim_keywords = ''
+	unmatched_manga = ''
 	sim_data = []
 	sim_synopses = []
 	sim_images = []
@@ -61,15 +64,18 @@ def home():
 			json = {'query': query_value, \
 				'input_list': input_list_value})
 
+		has_match = x.json()['has_match']
+		sim_keywords = (", ").join(x.json()['similar_keywords'])
+		unmatched_manga = (", ").join(x.json()['unmatched_manga'])
 		sim_data = x.json()['similar']
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
 		pmatch_keyword = x.json()['pmatch_keyword']
 		pmatch_mlist = x.json()['pmatch_mlist']
-	return render_template('search.html', name=project_name, \
-		netid=net_id, output_query=output_query, output_list=output_list, \
-		sim_data=sim_data, manga_list=index_to_manga_name.values(), \
+	return render_template('search.html', name=project_name, netid=net_id, has_match=has_match,\
+		unmatched_manga=unmatched_manga, output_query=output_query, output_list=output_list, \
+		sim_keywords = sim_keywords, sim_data=sim_data, manga_list=index_to_manga_name.values(), \
 		sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
@@ -178,7 +184,7 @@ def api():
 		tfidfquery = tfidf_vec.transform(new_query).toarray()
 	else:
 		orig_query = set()
-		sim_query = set()
+		sim_query = []
 		tfidfquery = np.zeros(num_features)
 
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
@@ -194,7 +200,7 @@ def api():
 	cos_sim_rank_name, cos_sim_rank_idx, cos_sim_scores = \
 		cos_sim_rank(tfidfmatrix, tfidfquery, index_to_manga_name, num_manga)
 
-	jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores = \
+	jac_sim_rank_name, jac_sim_rank_idx, jac_sim_scores, unmatched_manga = \
 		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index, \
 		index_to_manga_name, num_manga)
 
@@ -207,18 +213,32 @@ def api():
 	overall_rank_scores = []
 	percent_match_keyword = []
 	percent_match_mlist = []
+	d1 = index_to_manga_synopsis.copy()
+	
+	if np.all(np.isclose(combined_scores,combined_scores[0])):
+		has_match = False
+	else:
+		has_match = True
+
 	for manga_idx in overall_rank_idx:
 		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
-			index_to_manga_synopsis[manga_idx] = highlight(orig_query, sim_query, index_to_manga_synopsis[manga_idx])
+			d1[manga_idx] = highlight(orig_query, sim_query, d1[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
-			overall_rank_synopses.append(index_to_manga_synopsis[manga_idx])
+			overall_rank_synopses.append(d1[manga_idx])
 			overall_rank_images.append(index_to_manga_pic[manga_idx])
 			overall_rank_scores.append(combined_scores[manga_idx])
-			percent_match_keyword.append(cos_sim_scores[manga_idx]/combined_scores[manga_idx]*100)
-			percent_match_mlist.append(jac_sim_scores[manga_idx]*0.25/combined_scores[manga_idx]*100)
-	
+			if has_match:
+				percent_match_keyword.append(cos_sim_scores[manga_idx]/combined_scores[manga_idx]*100)
+				percent_match_mlist.append(jac_sim_scores[manga_idx]*0.25/combined_scores[manga_idx]*100)
+			else:
+				percent_match_keyword.append(0) #just to avoid errors in terminal
+				percent_match_mlist.append(0)
+
 	return json.dumps(
 		{
+			'has_match': has_match,
+			'unmatched_manga': unmatched_manga,
+			'similar_keywords': sim_query,
 			'similar': overall_rank_names[:10],
 			'dissimilar': overall_rank_names[-10:],
 			'similar_synopses': overall_rank_synopses[:10],
