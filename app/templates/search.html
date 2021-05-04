@@ -32,6 +32,7 @@
                 <span class="date">Search Results</span>
                 <p>Keywords: {{output_query}}</p>
                 <p>Input list: {{output_list}}</p>
+                {% if has_match %}
                 <p>Similar Keywords Found: {{sim_keywords}}</p>
                 <p style="font-size: 25px;">Top 10 similar mangas:</p>
             </header>
@@ -75,6 +76,9 @@
             {% endfor %}
         
         </section>
+        {% else %} 
+        <p><b>No match found. This could be because your input word is too rare, or the input manga was not found.</b></p>
+        {% endif %}
     {% endif %}
 </div>
 {% endblock %}

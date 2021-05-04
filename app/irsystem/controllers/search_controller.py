@@ -33,6 +33,7 @@ def extract_token(request):
 def home():
 	query = request.args.get('query')
 	mlst = request.args.get('input_list')
+	has_match = False
 	sim_keywords = ''
 	sim_data = []
 	sim_synopses = []
@@ -61,6 +62,7 @@ def home():
 			json = {'query': query_value, \
 				'input_list': input_list_value})
 
+		has_match = x.json()['has_match']
 		sim_keywords = (" ").join(x.json()['similar_keywords'])
 		sim_data = x.json()['similar']
 		sim_synopses = x.json()['similar_synopses']
@@ -69,7 +71,7 @@ def home():
 		pmatch_keyword = x.json()['pmatch_keyword']
 		pmatch_mlist = x.json()['pmatch_mlist']
 	return render_template('search.html', name=project_name, \
-		netid=net_id, output_query=output_query, output_list=output_list, \
+		netid=net_id, has_match=has_match, output_query=output_query, output_list=output_list, \
 		sim_keywords = sim_keywords, sim_data=sim_data, manga_list=index_to_manga_name.values(), \
 		sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
@@ -219,8 +221,14 @@ def api():
 			percent_match_keyword.append(cos_sim_scores[manga_idx]/combined_scores[manga_idx]*100)
 			percent_match_mlist.append(jac_sim_scores[manga_idx]*0.25/combined_scores[manga_idx]*100)
 	
+	if np.all(np.isclose(combined_scores,combined_scores[0])):
+		has_match = False
+	else:
+		has_match = True
+
 	return json.dumps(
 		{
+			'has_match': has_match,
 			'similar_keywords': sim_query,
 			'similar': overall_rank_names[:10],
 			'dissimilar': overall_rank_names[-10:],
