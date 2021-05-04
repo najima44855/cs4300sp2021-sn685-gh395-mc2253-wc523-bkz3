@@ -7,6 +7,7 @@ from app.accounts.models.session import *
 from app.accounts.models.user import *
 from methods import *
 from flask_login import login_user, login_required, current_user, logout_user
+import os
 
 import secrets
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -59,7 +60,7 @@ def home():
 			output_list = ''
 		output_query = query
 		output_list = mlst
-		x = requests.post('https://manga-recs.herokuapp.com/api/', \
+		x = requests.post(os.environ['API_URL'], \
 			json = {'query': query_value, \
 				'input_list': input_list_value})
 
