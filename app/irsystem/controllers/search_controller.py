@@ -33,6 +33,7 @@ def extract_token(request):
 def home():
 	query = request.args.get('query')
 	mlst = request.args.get('input_list')
+	sim_keywords = ''
 	sim_data = []
 	sim_synopses = []
 	sim_images = []
