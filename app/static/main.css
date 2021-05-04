@@ -3198,6 +3198,20 @@ input::-moz-focus-inner {
 		color: #eeeeee;
 	}
 
+/*Highlights*/
+
+	.highlight1 {
+		background-color: yellow;
+		border-radius: 6px;
+		padding: 3px 6px;
+	}
+
+	.highlight2 {
+		background-color: lightgreen;
+		border-radius: 6px;
+		padding: 3px 6px;
+	}
+
 /* Wrapper */
 
 	#wrapper {

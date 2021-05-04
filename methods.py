@@ -1,7 +1,8 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from collections import defaultdict
 import numpy as np 
 import pickle
+import re
 from gensim.models import Word2Vec
 
 # Todo: weighted similarity score, document embeddings
@@ -11,11 +12,39 @@ from gensim.models import Word2Vec
 with open('dataset_1000_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
+def highlight(orig_query, sim_query, text):
+    if len(orig_query)==0:
+        return text
+    else:
+        for orig_term in orig_query:
+            p = re.compile(orig_term+"[^a-zA-Z]")
+            word_len = len(orig_term)
+            start_idx = []
+            for m in p.finditer(text):
+                start_idx.append(m.start())
+            for r in range(len(start_idx)):
+                start_idx[r] = start_idx[r]+r*30
+            for idx in start_idx:
+                text = text[:idx]+"<span class=highlight1>"+orig_term+"</span>"+text[idx+word_len:]
+        for sim_term in sim_query:
+            p = re.compile(sim_term+"[^a-zA-Z]")
+            word_len = len(sim_term)
+            start_idx = []
+            for m in p.finditer(text):
+                start_idx.append(m.start())
+            for r in range(len(start_idx)):
+                start_idx[r] = start_idx[r]+r*30
+            for idx in start_idx:
+                text = text[:idx]+"<span class=highlight2>"+sim_term+"</span>"+text[idx+word_len:]
+        return text
+
 index_to_manga_name = dict()
-index_to_manga = dict()
+index_to_manga_synopsis = dict()
+index_to_manga_pic = dict()
 for i, manga_item in enumerate(manga_list.values()):
     index_to_manga_name[i] = manga_item['title']
-    index_to_manga[i] = (manga_item['synopsis'], manga_item['main_picture']['large'])
+    index_to_manga_synopsis[i] = manga_item['synopsis']
+    index_to_manga_pic[i] = manga_item['main_picture']['large']
 
 manga_synonym_dict = dict() #manga title-> main title
 for manga_item in manga_list.values():
@@ -36,12 +65,22 @@ model = Word2Vec.load('word2vec.model')
 def add_to_query(query):
     words_in_model= set(model.wv.key_to_index.keys())
     new_query = ""
-    for word in query.split(" "):
-        new_query += word + " "
-        if word in words_in_model:
-            for ele in model.wv.most_similar(word, topn=3):
-                new_query += ele[0] + " "
-    return [new_query]
+    original_query= []
+    similar_query = []
+    vectorizer = CountVectorizer(stop_words='english')
+    query_vec = vectorizer.fit_transform([query]).toarray()
+    all_words = vectorizer.get_feature_names()
+    for idx, n in enumerate(query_vec[0]):
+        word = all_words[idx]
+        for j in range(n):
+            new_query += word + " " + word + " " #weights original keyterm 2x as much as similar words
+            original_query.append(word)
+            if word in words_in_model:
+                for ele in model.wv.most_similar(word, topn=3):
+                    w = ele[0]
+                    new_query += w + " "
+                    similar_query.append(w)
+    return [new_query], set(original_query), set(similar_query)
 
 """
 Given a manga, return the cosine similarity between the it and the query.
