@@ -2,6 +2,7 @@ from . import *
 from app.irsystem.models.helpers import *
 from app.accounts.controllers.sessions_controller import *
 from app.accounts.controllers.users_controller import *
+from app.accounts.controllers.favorites_controller import *
 from app.accounts.models.session import *
 from app.accounts.models.user import *
 from methods import *
@@ -33,8 +34,6 @@ def home():
 	query = request.args.get('query')
 	mlst = request.args.get('input_list')
 	sim_data = []
-	dis_data = []
-	sim_stripped = []
 	sim_synopses = []
 	sim_images = []
 	sim_scores = []
@@ -60,14 +59,12 @@ def home():
 				'input_list': input_list_value})
 
 		sim_data = x.json()['similar']
-		dis_data = x.json()['dissimilar']
-		sim_stripped = [x.replace(" ", "") for x in sim_data]
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_query=output_query, output_list=output_list, \
-		sim_data=sim_data, dis_data=dis_data, sim_stripped=sim_stripped, \
+		sim_data=sim_data, manga_list=index_to_manga_name.values(), \
 		sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, len=len(sim_data), \
 		home_class="active", profile_class = "", login_class = "", \
@@ -135,22 +132,31 @@ def logout():
 	
 @irsystem.route('/profile/', methods=['GET'])
 def profile():
+	was_successful, favorites = get_favorites(current_user.username)
+
+	if not was_successful:
+		return render_template('profile.html', name=current_user.fname, \
+			home_class="", profile_class = "active", login_class = "", \
+			register_class = "", logout_class = "", no_favorites = True)
+
+	sim_data = []
+	sim_images = []
+
+	for f in favorites:
+		sim_data.append(f.title)
+		sim_images.append(f.img_url)
+
 	return render_template('profile.html', name=current_user.fname, \
 		home_class="", profile_class = "active", login_class = "", \
-		register_class = "", logout_class = "")
-		# sim_data=sim_data, \
-		# sim_images=sim_images, len=len(sim_data))
+		register_class = "", logout_class = "", no_favorites = False, \
+		sim_data=sim_data, sim_images=sim_images, len=len(sim_data))
 
 @irsystem.route('/favorite/', methods=['POST'])
 def favorite():
 	body = json.loads(request.data)
-	print("bruhh")
-	print(body)
-	return json.dumps(
-		{
-			'ba': 'pog'
-		}
-	)
+	create_favorites(current_user.username, body.get('title'), body.get('img_url'))
+
+	return redirect(url_for('irsystem.profile'))
 
 @irsystem.route('/api/', methods=['POST'])
 def api():

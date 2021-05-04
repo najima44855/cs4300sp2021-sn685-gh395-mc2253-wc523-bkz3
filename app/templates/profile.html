@@ -9,9 +9,39 @@
     <article class="post featured">
         <header class="major">
             <span class="date">Your Favorites</span>
-            <div id="favorites">
-            </div>
         </header>
     </article>
+
+    {% if not no_favorites %}
+        <section class="posts">
+            {% for i in range(0, len) %} 
+                <article>
+                    <header>
+                        <h2><a href="#">{{sim_data[i]}}</a></h2>
+                    </header>
+                    <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
+
+                    <form>
+                        <input type="submit" onclick="addToFavorites('{{sim_data[i]}}', '{{sim_images[i]}}')" value="Add to favorites">
+
+                        <script>
+                            function addToFavorites(title, img_url) {
+                                var params = {
+                                    "title": title,
+                                    "img_url": img_url
+                                };
+                                var xhttp = new XMLHttpRequest();
+                                xhttp.open("POST", "http://localhost:5000/favorite/", false);
+                                xhttp.send(JSON.stringify(params));
+                            }
+                        </script>
+                    </form>
+                </article>
+            {% endfor %}
+
+        </section>
+    {% else %}
+    <p style="text-align: center;">You have no favorites 😢</p>
+    {% endif %}
 </div>
 {% endblock %}

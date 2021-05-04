@@ -9,12 +9,19 @@
     <div class="topcorner">
         <h1>{{ name }}</h1>
         <p>Made by: ({{ netid }})</p>
+
+        
     </div>
 
     <form class="form-inline global-search">
         <div class="form-group">
-            <input id="input" type="text" name="query" class="form-control" placeholder="Keywords...">
-            <input id="input" type="text" name="input_list" class="form-control" placeholder="Manga titles...">
+            <input id="query" type="text" name="query" class="form-control" placeholder="Keywords...">
+            <input list="mangas" id="input_list" type="text" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
+            <datalist id="mangas">
+                {% for m in manga_list %}
+                    <option value="{{m}}">
+                {% endfor %}
+            </datalist>
         </div>
         <button type="submit" class="btn btn-info"> Go! </button>
     </form>
@@ -35,29 +42,23 @@
                 <article>
                     <header>
                         <h2><a href="#">{{sim_data[i]}}</a></h2>
-                        <span class="date">Similarity score: {{sim_scores[i]}}</span>
                     </header>
                     <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
                     <p>Synopsis:</p>
                     <p>{{sim_synopses[i]}}</p>
                     {% if current_user.is_authenticated %}
 
-                    <form action="/favorite/" method="post">
-                        <input type="submit" onclick="addToFavorites()" value="Add to favorites">
+                    <form>
+                        <input type="submit" onclick="addToFavorites('{{sim_data[i]}}', '{{sim_images[i]}}')" value="Add to favorites">
 
                         <script>
-                            function addToFavorites() {
+                            function addToFavorites(title, img_url) {
                                 var params = {
-                                    "title": "{{sim_stripped[i]}}",
-                                    "user_id": 2
+                                    "title": title,
+                                    "img_url": img_url
                                 };
                                 var xhttp = new XMLHttpRequest();
-                                xhttp.onreadystatechange = function() {
-                                    if (this.readyState == 4 && this.status == 200) {
-                                    document.getElementById("demo").innerHTML = this.responseText;
-                                    }
-                                };
-                                xhttp.open("POST", "http://localhost:5000/favorite/");
+                                xhttp.open("POST", "http://localhost:5000/favorite/", false);
                                 xhttp.send(JSON.stringify(params));
                             }
                         </script>
