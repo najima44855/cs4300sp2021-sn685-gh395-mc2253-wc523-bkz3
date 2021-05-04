@@ -56,10 +56,11 @@ def home():
 			output_list = ''
 		output_query = query
 		output_list = mlst
-		x = requests.post('https://manga-recs.herokuapp.com//api/', \
+		x = requests.post('https://manga-recs.herokuapp.com/api/', \
 			json = {'query': query_value, \
 				'input_list': input_list_value})
 
+		sim_keywords = (" ").join(x.json()['similar_keywords'])
 		sim_data = x.json()['similar']
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
@@ -68,7 +69,7 @@ def home():
 		pmatch_mlist = x.json()['pmatch_mlist']
 	return render_template('search.html', name=project_name, \
 		netid=net_id, output_query=output_query, output_list=output_list, \
-		sim_data=sim_data, manga_list=index_to_manga_name.values(), \
+		sim_keywords = sim_keywords, sim_data=sim_data, manga_list=index_to_manga_name.values(), \
 		sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
@@ -177,7 +178,7 @@ def api():
 		tfidfquery = tfidf_vec.transform(new_query).toarray()
 	else:
 		orig_query = set()
-		sim_query = set()
+		sim_query = []
 		tfidfquery = np.zeros(num_features)
 
 	manga_name_to_index = {v:k for k,v in index_to_manga_name.items()}
@@ -206,11 +207,12 @@ def api():
 	overall_rank_scores = []
 	percent_match_keyword = []
 	percent_match_mlist = []
+	d1 = index_to_manga_synopsis.copy()
 	for manga_idx in overall_rank_idx:
 		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
-			index_to_manga_synopsis[manga_idx] = highlight(orig_query, sim_query, index_to_manga_synopsis[manga_idx])
+			d1[manga_idx] = highlight(orig_query, sim_query, d1[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
-			overall_rank_synopses.append(index_to_manga_synopsis[manga_idx])
+			overall_rank_synopses.append(d1[manga_idx])
 			overall_rank_images.append(index_to_manga_pic[manga_idx])
 			overall_rank_scores.append(combined_scores[manga_idx])
 			percent_match_keyword.append(cos_sim_scores[manga_idx]/combined_scores[manga_idx]*100)
@@ -218,6 +220,7 @@ def api():
 	
 	return json.dumps(
 		{
+			'similar_keywords': sim_query,
 			'similar': overall_rank_names[:10],
 			'dissimilar': overall_rank_names[-10:],
 			'similar_synopses': overall_rank_synopses[:10],

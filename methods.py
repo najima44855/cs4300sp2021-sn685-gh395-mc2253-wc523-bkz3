@@ -67,6 +67,7 @@ def add_to_query(query):
     new_query = ""
     original_query= []
     similar_query = []
+    similar_query_set = set()
     vectorizer = CountVectorizer(stop_words='english')
     query_vec = vectorizer.fit_transform([query]).toarray()
     all_words = vectorizer.get_feature_names()
@@ -79,8 +80,10 @@ def add_to_query(query):
                 for ele in model.wv.most_similar(word, topn=3):
                     w = ele[0]
                     new_query += w + " "
-                    similar_query.append(w)
-    return [new_query], set(original_query), set(similar_query)
+                    if w not in similar_query_set:
+                        similar_query_set.add(w)
+                        similar_query.append(w)
+    return [new_query], set(original_query), similar_query
 
 """
 Given a manga, return the cosine similarity between the it and the query.
