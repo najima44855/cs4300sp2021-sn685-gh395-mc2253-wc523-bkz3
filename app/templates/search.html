@@ -15,6 +15,10 @@
 
     <form class="form-inline global-search">
         <div class="form-group">
+            <h2>Instructions</h2>
+            <p>Input keywords pertaining to your manga e.g. "kill" <br>
+                Input manga you want the output manga to be similar to (separated by commas) e.g."Berserk, Tokyo Ghoul"
+            </p>
             <input id="query" type="text" name="query" class="form-control" placeholder="Keywords...">
             <input list="mangas" id="input_list" type="text" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
             <datalist id="mangas">
@@ -38,6 +42,9 @@
                 {% if has_match %}
                 <p>Similar Keywords Found: {{sim_keywords}}</p>
                 <p style="font-size: 25px;">Top 10 similar mangas:</p>
+                <p><span class='highlight1'>Yellow</span> highlights are matches with your keywords.<br>
+                    <span class='highlight2'>Green</span> highlights are similar keywords found by word embeddings.<br>
+                </p>
             </header>
         </article>
 
