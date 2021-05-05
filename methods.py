@@ -20,10 +20,8 @@ def highlight(orig_query, sim_query, text):
         text = get_new_query(sim_query, text, False)
         return text
 
-<<<<<<< HEAD
 index_to_id = dict()
 id_to_index = dict()
-=======
 def get_new_query(terms, text, is_orig_term):
     for term in terms:
         p = re.compile(r"\b"+term+r"\b", re.IGNORECASE)
@@ -35,9 +33,6 @@ def get_new_query(terms, text, is_orig_term):
             groups.append(m.group())
         for r in range(len(start_idx)):
             start_idx[r] = start_idx[r]+r*30
-        for i, g in enumerate(groups):
-            if not g[-1].isalpha():
-                groups[i]=g[:-1]
         if is_orig_term:
             for i, idx in enumerate(start_idx):
                 text = text[:idx]+"<span class=highlight1>"+groups[i]+"</span>"+text[idx+word_len:]
@@ -46,7 +41,6 @@ def get_new_query(terms, text, is_orig_term):
                 text = text[:idx]+"<span class=highlight2>"+groups[i]+"</span>"+text[idx+word_len:]
     return text
 
->>>>>>> 198985cba8871594f29a4682bcfdd0d9dc3bbcae
 index_to_manga_name = dict()
 index_to_manga_synopsis = dict()
 index_to_manga_pic = dict()
@@ -97,6 +91,37 @@ def add_to_query(query):
                         similar_query_set.add(w)
                         similar_query.append(w)
     return [new_query], set(original_query), similar_query
+
+def insert_readmore(text):
+    p = re.compile(r'\s')
+    l = [m.start() for m in p.finditer(text)]
+    idx = binsearch(l, 350)
+    if idx == -1:
+        return text, False
+    else:
+        text = text[:l[idx]] + '<span class="dots">...</span><span class="more">' + text[l[idx]:] +"</span>"
+        return text, True
+        
+
+def binsearch(arr, x):
+    low = 0
+    high = len(arr) - 1
+    mid = 0
+    if arr[-1]<x:
+        return -1
+    else:
+        while low <= high:
+            mid = (high + low) // 2
+            
+            if arr[mid] < x:
+                low = mid + 1
+            
+            elif arr[mid]> x:
+                high = mid -1
+                
+            else:
+                return mid
+        return high
 
 """
 Given a manga, return the cosine similarity between the it and the query.

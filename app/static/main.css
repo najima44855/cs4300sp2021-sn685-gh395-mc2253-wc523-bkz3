@@ -3217,6 +3217,9 @@ input::-moz-focus-inner {
 		padding: 3px 6px;
 	}
 
+	.more {
+		display: none;
+	}
 /* Wrapper */
 
 	#wrapper {

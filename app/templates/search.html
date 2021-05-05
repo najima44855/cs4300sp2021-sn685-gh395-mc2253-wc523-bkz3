@@ -5,6 +5,22 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<script>
+    function evtButton(info) {
+        if (info.innerHTML == 'read more') {
+            info.innerHTML = 'read less'
+            info.previousElementSibling.querySelector('.dots').style.display = 'none';
+            info.previousElementSibling.querySelector('.more').style.display = 'inline';
+        }
+        else {
+            info.innerHTML = 'read more'
+            info.previousElementSibling.querySelector('.dots').style.display = 'inline';
+            info.previousElementSibling.querySelector('.more').style.display = 'none';
+        }
+    }
+</script>
+
 <div id="main">
     <div class="topcorner">
         <h1>{{ name }}</h1>
@@ -57,6 +73,9 @@
                     <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
                     <p>Synopsis:</p>
                     <p>{{sim_synopses[i]|safe}}</p>
+                    {% if insertion_list[i] %}
+                    <button class="expand" onclick="evtButton(this)">read more</button>
+                    {% endif %}
                     {% if pmatch_keyword[i]-pmatch_mlist[i] > 25 %}
                     <p>We suggested this manga because of keyword (or similar keyword) similarity.</p>
                     {% elif pmatch_keyword[i]-pmatch_mlist[i] < -25 %}
