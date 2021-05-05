@@ -257,7 +257,7 @@ def api():
 		grouped_jac_rank(input_list, manga_to_genre_dict, manga_name_to_index, \
 		index_to_manga_name, num_manga)
 
-	input_list_lower = [i.lower() for i in input_list]
+	input_list_lower = [manga_synonym_dict[i.lower()].lower() for i in input_list]
 	combined_scores = cos_sim_scores + 0.25 * jac_sim_scores
 	overall_rank_idx = combined_scores.argsort()[::-1]
 	overall_rank_ids = []
