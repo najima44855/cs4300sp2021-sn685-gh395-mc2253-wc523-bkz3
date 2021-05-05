@@ -44,6 +44,8 @@ def home():
 	sim_scores = []
 	pmatch_keyword =[]
 	pmatch_mlist = []
+	fav_url = os.environ['BASE_URL'] + 'favorite/'
+	unfav_url = os.environ['BASE_URL'] + 'unfavorite/'
 
 	if not query and not mlst:
 		output_query = ''
@@ -61,7 +63,7 @@ def home():
 			output_list = ''
 		output_query = query
 		output_list = mlst
-		x = requests.post(os.environ['API_URL'], \
+		x = requests.post(os.environ['BASE_URL'] + 'api/', \
 			json = {'query': query_value, \
 				'input_list': input_list_value})
 
@@ -70,7 +72,7 @@ def home():
 		unmatched_manga = (", ").join(x.json()['unmatched_manga'])
 		sim_data = x.json()['similar']
 		temp_sim_ids = x.json()['similar_ids']
-		sim_ids = ['https://manga-recs.herokuapp.com/manga/' + str(x) + '/' for x in temp_sim_ids]
+		sim_ids = [os.environ['BASE_URL'] + 'manga/' + str(x) + '/' for x in temp_sim_ids]
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
@@ -82,7 +84,7 @@ def home():
 		manga_list=index_to_manga_name.values(), sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
-		register_class = "", logout_class = "")
+		register_class = "", logout_class = "", fav_url=fav_url)
 
 def myconverter(o):
 	if isinstance(o, datetime.datetime):
@@ -185,14 +187,25 @@ def manga_details(manga_id):
 		str(manga_id) + '/reviews')
 
 	manga_reviews = []
+	manga_reviews_usernames = []
+	manga_reviews_upvotes = []
 	for review in response_body.json()['reviews']:
-		manga_reviews.append(review['content'])
+		manga_reviews.append(review['content'].replace("\\n","\n"))
+		manga_reviews_usernames.append(review['reviewer']['username'])
+		manga_reviews_upvotes.append(review['helpful_count'])
 	dict_id = id_to_index[manga_id]
 
+	fav_url = os.environ['BASE_URL'] + 'favorite/'
+	unfav_url = os.environ['BASE_URL'] + 'unfavorite/'
+
 	return render_template('manga.html', \
-		manga_titles=index_to_manga_name[dict_id], \
+		manga_title=index_to_manga_name[dict_id], \
 		manga_synopsis=index_to_manga_synopsis[dict_id], \
-		manga_image=index_to_manga_pic[dict_id], manga_reviews=manga_reviews)
+		manga_image=index_to_manga_pic[dict_id], manga_reviews=manga_reviews, \
+		manga_reviews_usernames=manga_reviews_usernames, \
+		manga_reviews_upvotes=manga_reviews_upvotes, \
+		len=len(manga_reviews), \
+		fav_url=fav_url, unfav_url=unfav_url)
 
 @irsystem.route('/api/', methods=['POST'])
 def api():

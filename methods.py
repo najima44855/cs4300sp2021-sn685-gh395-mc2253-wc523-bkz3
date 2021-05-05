@@ -20,10 +20,6 @@ def highlight(orig_query, sim_query, text):
         text = get_new_query(sim_query, text, False)
         return text
 
-<<<<<<< HEAD
-index_to_id = dict()
-id_to_index = dict()
-=======
 def get_new_query(terms, text, is_orig_term):
     for term in terms:
         p = re.compile(r"\b"+term+r"\b", re.IGNORECASE)
@@ -46,7 +42,8 @@ def get_new_query(terms, text, is_orig_term):
                 text = text[:idx]+"<span class=highlight2>"+groups[i]+"</span>"+text[idx+word_len:]
     return text
 
->>>>>>> 198985cba8871594f29a4682bcfdd0d9dc3bbcae
+index_to_id = dict()
+id_to_index = dict()
 index_to_manga_name = dict()
 index_to_manga_synopsis = dict()
 index_to_manga_pic = dict()

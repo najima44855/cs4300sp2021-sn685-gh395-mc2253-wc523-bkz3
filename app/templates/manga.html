@@ -6,7 +6,7 @@
 
 {% block content %}
 <div id="main">
-    <h2 class="title">{{ manga_title }}</h2>
+    <h2 class="title">Manga Details</h2>
 
     <article class="post featured">
         <header class="major">
@@ -14,56 +14,60 @@
         </header>
     </article>
 
-        <article>
-            <header>
-                <h2><a href="#">{{ manga_title }}</a></h2>
-            </header>
-            <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src="{{ manga_image }}" alt="{{ manga_title }} cover image" /></a>
-            <p>Synopsis:</p>
-            <p>{{manga_synopsis|safe}}</p>
+    <article style="text-align: center;">
+        <header>
+            <h2 style="font-size: 2.5rem;">{{ manga_title }}</h2>
+        </header>
+        <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src="{{ manga_image }}" alt="{{ manga_title }} cover image" /></a>
+        <h3 style="font-size: 2rem;">Synopsis:</h3>
+        <p>{{manga_synopsis|safe}}</p>
 
-            {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated %}
 
-            <form>
-                {% if favorited %}
-                <input type="submit" onclick="addToFavorites('{{ manga_title }}', '{{ manga_image }}')" value="Add to favorites">
+        <form>
+            {% if favorited %}
+            <input type="submit" onclick="addToFavorites('{{ manga_title }}', '{{ manga_image }}', '{{ fav_url }}')" value="Add to favorites">
 
-                <script>
-                    function addToFavorites(title, img_url) {
-                        var params = {
-                            "title": title,
-                            "img_url": img_url
-                        };
-                        var xhttp = new XMLHttpRequest();
-                        xhttp.open("POST", "https://manga-recs.herokuapp.com/favorite/", false);
-                        xhttp.send(JSON.stringify(params));
-                    }
-                </script>
-                {% else %}
-                <input type="submit" onclick="removeFromFavorites('{{ manga_title }}')" value="Remove from favorites">
+            <script>
+                function addToFavorites(title, img_url, post_url) {
+                    var params = {
+                        "title": title,
+                        "img_url": img_url
+                    };
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.open("POST", post_url, false);
+                    xhttp.send(JSON.stringify(params));
+                }
+            </script>
+            {% else %}
+            <input type="submit" onclick="removeFromFavorites('{{ manga_title }}', '{{ unfav_url }}')" value="Remove from favorites">
 
-                <script>
-                    function removeFromFavorites(title) {
-                        var params = {
-                            "title": title
-                        };
-                        var xhttp = new XMLHttpRequest();
-                        xhttp.open("POST", "https://manga-recs.herokuapp.com/unfavorite/", false);
-                        xhttp.send(JSON.stringify(params));
-                    }
-                </script>
-                {% endif %}
-            </form>
+            <script>
+                function removeFromFavorites(title, post_url) {
+                    var params = {
+                        "title": title
+                    };
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.open("POST", post_url, false);
+                    xhttp.send(JSON.stringify(params));
+                }
+            </script>
             {% endif %}
-        </article>
+        </form>
+        {% endif %}
+    </article>
 
-        <article>
-            <p>Reviews:</p>
+    <article>
+        <h3 style="font-size: 2rem;">Reviews:</h3>
 
-            {% for i in manga_reviews %}
-                <p>{{i|safe}}</p>
-            {% endfor %}
-        </article>
-    </section>
+        {% for i in range(0, len) %}
+            <p>{{manga_reviews[i]|safe}}</p>
+            <p style="display: flex; justify-content: space-between;">
+                <span style="font-style: italic; font-size: 120%;">– {{manga_reviews_usernames[i]|safe}}</span>
+                <span style="display: flex; flex-direction: column;"><i style="font-size:24px;" class="fa">&#xf087;</i>{{manga_reviews_upvotes[i]|safe}}</span>
+            </p>
+            <br/>
+        {% endfor %}
+    </article>
 </div>
 {% endblock %}

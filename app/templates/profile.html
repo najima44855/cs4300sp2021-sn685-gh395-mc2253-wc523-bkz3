@@ -34,7 +34,7 @@
                                     "title": title
                                 };
                                 var xhttp = new XMLHttpRequest();
-                                xhttp.open("POST", "https://manga-recs.herokuapp.com/unfavorite/", false);
+                                xhttp.open("POST", "http://localhost:5000/unfavorite/", false);
                                 xhttp.send(JSON.stringify(params));
                             }
                         </script>
