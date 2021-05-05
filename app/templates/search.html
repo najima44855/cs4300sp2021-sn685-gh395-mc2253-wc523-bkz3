@@ -1,5 +1,6 @@
 <head>
     <title>Search - Manga Recs</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-flexdatalist/2.3.0/jquery.flexdatalist.css" rel="stylesheet" type="text/css">
 </head>
 
 {% extends "base.html" %}
@@ -20,6 +21,18 @@
         }
     }
 </script>
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-flexdatalist/2.3.0/jquery.flexdatalist.min.js"></script>
+<script>
+$('.flexdatalist-json').flexdatalist({
+     searchContain: false,
+     valueProperty: 'iso2',
+     minLength: 1,
+     focusFirstResult: true,
+     selectionRequired: true,
+});
+</script>
+
 
 <div id="main">
     <div class="topcorner">
@@ -32,14 +45,29 @@
     <form class="form-inline global-search">
         <div class="form-group">
             <h2>Instructions</h2>
-            <p>Input keywords pertaining to your manga e.g. "kill" <br>
-                Input manga you want the output manga to be similar to (separated by commas) e.g."Berserk, Tokyo Ghoul"
+            <p>Input keywords pertaining to your manga e.g. "guns killing" <br>
+                Input manga you want the output manga to be similar to (separated by commas) e.g."Berserk, Tokyo Ghoul" <br>
+                You may leave either field blank.
             </p>
             <input id="query" type="text" name="query" class="form-control" placeholder="Keywords...">
-            <input list="mangas" id="input_list" type="email" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
+            <!-- <input list="mangas" id="input_list" type="email" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
             <datalist id="mangas">
                 {% for m in manga_list %}
                     <option value="{{m}}">
+                {% endfor %}
+            </datalist> -->
+
+            <input type='text'
+                placeholder='Manga titles...'
+                class='flexdatalist form-control'
+                data-min-length='1'
+                multiple=''
+                list='mangas'
+                name='input_list'>
+
+            <datalist id="mangas">
+                {% for m in manga_list %}
+                <option value="{{m}}">{{m}}</option>
                 {% endfor %}
             </datalist>
         </div>

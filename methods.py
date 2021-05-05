@@ -54,16 +54,21 @@ for i, manga_item in enumerate(manga_list.values()):
     name_to_id[manga_item['title']] = manga_item['id']
 
 manga_synonym_dict = dict() #manga title-> main title
+manga_titles = set()
 for manga_item in manga_list.values():
     all_names = set()
     main_title = manga_item['title']
     all_names.add(main_title.lower())
+    manga_titles.add(main_title)
     for title in manga_item['alternative_titles']['synonyms']:
         all_names.add(title.lower())
+        manga_titles.add(title)
     if manga_item['alternative_titles']['en'] != '':
         all_names.add(manga_item['alternative_titles']['en'].lower())
+        manga_titles.add(manga_item['alternative_titles']['en'])
     if manga_item['alternative_titles']['ja'] != '':
         all_names.add(manga_item['alternative_titles']['ja'].lower()) 
+        manga_titles.add(manga_item['alternative_titles']['ja']) 
     for title in all_names:
         manga_synonym_dict[title] = main_title
 

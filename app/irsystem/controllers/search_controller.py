@@ -81,7 +81,7 @@ def home():
 	return render_template('search.html', name=project_name, netid=net_id, has_match=has_match,\
 		unmatched_manga=unmatched_manga, output_query=output_query, output_list=output_list, \
 		sim_keywords = sim_keywords, sim_data=sim_data, sim_ids=sim_ids, insertion_list=insertion_list,\
-		manga_list=index_to_manga_name.values(), sim_synopses=sim_synopses, sim_images=sim_images, \
+		manga_list=manga_titles, sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
 		register_class = "", logout_class = "")
