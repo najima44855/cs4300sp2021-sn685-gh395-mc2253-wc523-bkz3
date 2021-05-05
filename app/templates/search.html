@@ -104,6 +104,8 @@ $('.flexdatalist-json').flexdatalist({
                     {% if insertion_list[i] %}
                     <button class="expand" onclick="evtButton(this)" style="margin-bottom: 2.5rem;">read more</button>
                     {% endif %}
+                    <p>User rating (0-10): {{ratings[i]}}</p>
+                    <p>Number of readers (lifetime): {{n_readers[i]}}</p>
                     {% if pmatch_keyword[i]-pmatch_mlist[i] > 25 %}
                     <p>We suggested this manga because of keyword (or similar keyword) similarity.</p>
                     {% elif pmatch_keyword[i]-pmatch_mlist[i] < -25 %}

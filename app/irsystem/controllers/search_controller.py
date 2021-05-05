@@ -47,6 +47,8 @@ def home():
 	fav_url = os.environ['BASE_URL'] + 'favorite/'
 	unfav_url = os.environ['BASE_URL'] + 'unfavorite/'
 	insertion_list=[]
+	ratings=[]
+	n_readers=[]
 
 	if not query and not mlst:
 		output_query = ''
@@ -80,13 +82,15 @@ def home():
 		sim_scores = x.json()['similar_scores']
 		pmatch_keyword = x.json()['pmatch_keyword']
 		pmatch_mlist = x.json()['pmatch_mlist']
+		ratings = x.json()['ratings']
+		n_readers = x.json()['n_readers']
 	return render_template('search.html', name=project_name, netid=net_id, has_match=has_match,\
 		unmatched_manga=unmatched_manga, output_query=output_query, output_list=output_list, \
 		sim_keywords = sim_keywords, sim_data=sim_data, sim_ids=sim_ids, insertion_list=insertion_list,\
 		manga_list=manga_titles, sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
-		register_class = "", logout_class = "", fav_url=fav_url)
+		register_class = "", logout_class = "", fav_url=fav_url, ratings=ratings, n_readers=n_readers)
 
 def myconverter(o):
 	if isinstance(o, datetime.datetime):
@@ -265,6 +269,8 @@ def api():
 	overall_rank_synopses = []
 	overall_rank_images = []
 	overall_rank_scores = []
+	overall_rank_rating = []
+	overall_rank_readers = []
 	percent_match_keyword = []
 	percent_match_mlist = []
 	read_more_list = []
@@ -288,6 +294,8 @@ def api():
 			read_more_list.append(has_readmore)
 			overall_rank_images.append(index_to_manga_pic[manga_idx])
 			overall_rank_scores.append(combined_scores[manga_idx])
+			overall_rank_rating.append(index_to_rating[manga_idx])
+			overall_rank_readers.append(index_to_readers[manga_idx])
 			if has_match:
 				percent_match_keyword.append(cos_sim_scores[manga_idx]/combined_scores[manga_idx]*100)
 				percent_match_mlist.append(jac_sim_scores[manga_idx]*0.25/combined_scores[manga_idx]*100)
@@ -300,15 +308,17 @@ def api():
 		{
 			'has_match': has_match,
 			'unmatched_manga': unmatched_manga,
-			'similar_ids': overall_rank_ids[:10],
+			'similar_ids': overall_rank_ids,
 			'similar_keywords': sim_query,
-			'similar': overall_rank_names[:10],
-			'similar_synopses': overall_rank_synopses[:10],
+			'similar': overall_rank_names,
+			'similar_synopses': overall_rank_synopses,
 			'insertion_list': read_more_list,
-			'similar_images': overall_rank_images[:10],
-			'similar_scores': overall_rank_scores[:10],
-			'pmatch_keyword': percent_match_keyword[:10],
-			'pmatch_mlist': percent_match_mlist[:10]
+			'similar_images': overall_rank_images,
+			'similar_scores': overall_rank_scores,
+			'pmatch_keyword': percent_match_keyword,
+			'pmatch_mlist': percent_match_mlist,
+			'ratings': overall_rank_rating,
+			'n_readers': overall_rank_readers
 		}
 	)
 

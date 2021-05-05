@@ -44,6 +44,8 @@ id_to_index = dict()
 index_to_manga_name = dict()
 index_to_manga_synopsis = dict()
 index_to_manga_pic = dict()
+index_to_rating = dict()
+index_to_readers = dict()
 name_to_id = dict()
 for i, manga_item in enumerate(manga_list.values()):
     index_to_id[i] = manga_item['id']
@@ -51,6 +53,8 @@ for i, manga_item in enumerate(manga_list.values()):
     index_to_manga_name[i] = manga_item['title']
     index_to_manga_synopsis[i] = manga_item['synopsis']
     index_to_manga_pic[i] = manga_item['main_picture']['large']
+    index_to_rating[i] = manga_item['mean']
+    index_to_readers[i] = manga_item['num_list_users']
     name_to_id[manga_item['title']] = manga_item['id']
 
 manga_synonym_dict = dict() #manga title-> main title
