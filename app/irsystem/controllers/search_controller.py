@@ -172,7 +172,7 @@ def profile():
 		home_class="", profile_class = "active", login_class = "", \
 		register_class = "", logout_class = "", no_favorites = False, \
 		sim_data=sim_data, sim_images=sim_images, sim_ids=sim_ids, \
-		len=len(sim_data))
+		len=len(sim_data), unfav_url=unfav_url)
 
 @irsystem.route('/favorite/', methods=['POST'])
 def favorite():

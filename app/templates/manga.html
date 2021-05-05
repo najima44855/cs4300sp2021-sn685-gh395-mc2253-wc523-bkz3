@@ -62,7 +62,7 @@
         <h3 style="font-size: 2rem;">Reviews:</h3>
 
         {% for i in range(0, len) %}
-            <p>{{manga_reviews[i]|safe}}</p>
+            <p style="margin: 0;">{{manga_reviews[i]|safe}}</p>
             {% if read_more_list[i] %}
             <button class="expand" onclick="evtButton(this)">read more</button>
 
@@ -84,7 +84,7 @@
             {% endif %}
 
             <p style="display: flex; justify-content: space-between;">
-                <span style="font-style: italic; font-size: 120%;">– {{manga_reviews_usernames[i]|safe}}</span>
+                <span style="font-style: italic; font-size: 120%; margin-top: 1.5rem;">– {{manga_reviews_usernames[i]|safe}}</span>
                 <span style="display: flex; flex-direction: column;"><i style="font-size:24px;" class="fa">&#xf087;</i>{{manga_reviews_upvotes[i]|safe}}</span>
             </p>
             <br/>
