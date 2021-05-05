@@ -62,6 +62,26 @@
 
         {% for i in range(0, len) %}
             <p>{{manga_reviews[i]|safe}}</p>
+            {% if read_more_list[i] %}
+            <button class="expand" onclick="evtButton(this)">read more</button>
+
+            <script>
+                function evtButton(info) {
+                    if (info.innerHTML == 'read more') {
+                        info.innerHTML = 'read less'
+                        info.previousElementSibling.querySelector('.dots').style.display = 'none';
+                        info.previousElementSibling.querySelector('.more').style.display = 'inline';
+                    }
+                    else {
+                        info.innerHTML = 'read more'
+                        info.previousElementSibling.querySelector('.dots').style.display = 'inline';
+                        info.previousElementSibling.querySelector('.more').style.display = 'none';
+                    }
+                }
+            </script>
+
+            {% endif %}
+
             <p style="display: flex; justify-content: space-between;">
                 <span style="font-style: italic; font-size: 120%;">– {{manga_reviews_usernames[i]|safe}}</span>
                 <span style="display: flex; flex-direction: column;"><i style="font-size:24px;" class="fa">&#xf087;</i>{{manga_reviews_upvotes[i]|safe}}</span>

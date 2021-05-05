@@ -1,10 +1,39 @@
 <head>
     <title>Search - Manga Recs</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-flexdatalist/2.3.0/jquery.flexdatalist.css" rel="stylesheet" type="text/css">
 </head>
 
 {% extends "base.html" %}
 
 {% block content %}
+
+<script>
+    function evtButton(info) {
+        if (info.innerHTML == 'read more') {
+            info.innerHTML = 'read less'
+            info.previousElementSibling.querySelector('.dots').style.display = 'none';
+            info.previousElementSibling.querySelector('.more').style.display = 'inline';
+        }
+        else {
+            info.innerHTML = 'read more'
+            info.previousElementSibling.querySelector('.dots').style.display = 'inline';
+            info.previousElementSibling.querySelector('.more').style.display = 'none';
+        }
+    }
+</script>
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-flexdatalist/2.3.0/jquery.flexdatalist.min.js"></script>
+<script>
+$('.flexdatalist-json').flexdatalist({
+     searchContain: false,
+     valueProperty: 'iso2',
+     minLength: 1,
+     focusFirstResult: true,
+     selectionRequired: true,
+});
+</script>
+
+
 <div id="main">
     <div class="topcorner">
         <h1>{{ name }}</h1>
@@ -16,14 +45,23 @@
     <form class="form-inline global-search">
         <div class="form-group">
             <h2>Instructions</h2>
-            <p>Input keyword(s) pertaining to your manga (separated by commas) e.g. "kill, violent" <br>
-                Input manga you want the output manga to be similar to (separated by commas) e.g."Berserk, Tokyo Ghoul"
+            <p>Input keywords pertaining to your manga e.g. "guns killing" <br>
+                Input manga you want the output manga to be similar to (separated by commas) e.g."Berserk, Tokyo Ghoul" <br>
+                You may leave either field blank.
             </p>
             <input id="query" type="text" name="query" class="form-control" placeholder="Keywords...">
-            <input list="mangas" id="input_list" type="text" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
+
+            <input type='text'
+                placeholder='Manga titles...'
+                class='flexdatalist form-control'
+                data-min-length='1'
+                multiple=''
+                list='mangas'
+                name='input_list'>
+
             <datalist id="mangas">
                 {% for m in manga_list %}
-                    <option value="{{m}}">
+                <option value="{{m}}">{{m}}</option>
                 {% endfor %}
             </datalist>
         </div>
@@ -57,6 +95,9 @@
                     <a href="{{ sim_ids[i] }}" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
                     <h3>Synopsis:</h3>
                     <p>{{sim_synopses[i]|safe}}</p>
+                    {% if insertion_list[i] %}
+                    <button class="expand" onclick="evtButton(this)" style="margin-bottom: 2.5rem;">read more</button>
+                    {% endif %}
                     {% if pmatch_keyword[i]-pmatch_mlist[i] > 25 %}
                     <p>We suggested this manga because of keyword (or similar keyword) similarity.</p>
                     {% elif pmatch_keyword[i]-pmatch_mlist[i] < -25 %}

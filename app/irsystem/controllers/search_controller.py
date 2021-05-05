@@ -46,6 +46,7 @@ def home():
 	pmatch_mlist = []
 	fav_url = os.environ['BASE_URL'] + 'favorite/'
 	unfav_url = os.environ['BASE_URL'] + 'unfavorite/'
+	insertion_list=[]
 
 	if not query and not mlst:
 		output_query = ''
@@ -74,14 +75,15 @@ def home():
 		temp_sim_ids = x.json()['similar_ids']
 		sim_ids = [os.environ['BASE_URL'] + 'manga/' + str(x) + '/' for x in temp_sim_ids]
 		sim_synopses = x.json()['similar_synopses']
+		insertion_list = x.json()['insertion_list']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
 		pmatch_keyword = x.json()['pmatch_keyword']
 		pmatch_mlist = x.json()['pmatch_mlist']
 	return render_template('search.html', name=project_name, netid=net_id, has_match=has_match,\
 		unmatched_manga=unmatched_manga, output_query=output_query, output_list=output_list, \
-		sim_keywords = sim_keywords, sim_data=sim_data, sim_ids=sim_ids, \
-		manga_list=index_to_manga_name.values(), sim_synopses=sim_synopses, sim_images=sim_images, \
+		sim_keywords = sim_keywords, sim_data=sim_data, sim_ids=sim_ids, insertion_list=insertion_list,\
+		manga_list=manga_titles, sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
 		register_class = "", logout_class = "", fav_url=fav_url)
@@ -189,8 +191,12 @@ def manga_details(manga_id):
 	manga_reviews = []
 	manga_reviews_usernames = []
 	manga_reviews_upvotes = []
+	read_more_list = []
+
 	for review in response_body.json()['reviews']:
-		manga_reviews.append(review['content'].replace("\\n","\n"))
+		review_content, has_readmore = insert_readmore(review['content'].replace("\\n","\n"))
+		manga_reviews.append(review_content)
+		read_more_list.append(has_readmore)
 		manga_reviews_usernames.append(review['reviewer']['username'])
 		manga_reviews_upvotes.append(review['helpful_count'])
 	dict_id = id_to_index[manga_id]
@@ -202,6 +208,7 @@ def manga_details(manga_id):
 		manga_title=index_to_manga_name[dict_id], \
 		manga_synopsis=index_to_manga_synopsis[dict_id], \
 		manga_image=index_to_manga_pic[dict_id], manga_reviews=manga_reviews, \
+		read_more_list=read_more_list, \
 		manga_reviews_usernames=manga_reviews_usernames, \
 		manga_reviews_upvotes=manga_reviews_upvotes, \
 		len=len(manga_reviews), \
@@ -252,7 +259,7 @@ def api():
 	overall_rank_scores = []
 	percent_match_keyword = []
 	percent_match_mlist = []
-	d1 = index_to_manga_synopsis.copy()
+	read_more_list = []
 	
 	if np.all(np.isclose(combined_scores,combined_scores[0])):
 		has_match = False
@@ -264,10 +271,13 @@ def api():
 		if count == 10:
 			break
 		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
-			d1[manga_idx] = highlight(orig_query, sim_query, d1[manga_idx])
+			synopsis = index_to_manga_synopsis[manga_idx]
+			synopsis, has_readmore = insert_readmore(synopsis)
+			synopsis = highlight(orig_query, sim_query, synopsis)
 			overall_rank_ids.append(index_to_id[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
-			overall_rank_synopses.append(d1[manga_idx])
+			overall_rank_synopses.append(synopsis)
+			read_more_list.append(has_readmore)
 			overall_rank_images.append(index_to_manga_pic[manga_idx])
 			overall_rank_scores.append(combined_scores[manga_idx])
 			if has_match:
@@ -286,25 +296,13 @@ def api():
 			'similar_keywords': sim_query,
 			'similar': overall_rank_names[:10],
 			'similar_synopses': overall_rank_synopses[:10],
+			'insertion_list': read_more_list,
 			'similar_images': overall_rank_images[:10],
 			'similar_scores': overall_rank_scores[:10],
 			'pmatch_keyword': percent_match_keyword[:10],
 			'pmatch_mlist': percent_match_mlist[:10]
 		}
 	)
-
-# @irsystem.route('/connect/', methods=['GET'])
-# def connect():
-# 	code_verifier = secrets.token_urlsafe(100)[:128]
-# 	user_auth_url = 'https://myanimelist.net/v1/oauth2/authorize' + '?response_type=code' \
-# 		+ '&client_id=' + str(os.environ["CLIENT_ID"]) + '&code_challenge=' \
-# 		+ str(code_verifier) + '&state=RequestID42'
-# 	print('Go to the following URL:', user_auth_url)
-
-# @irsystem.route('/oauth/', methods=['GET'])
-# def oauth():
-# 	code = request.args.get('code')
-#   password = request.args.get('password')
 
 @irsystem.route('/session/', methods=['POST'])
 def session():

@@ -195,6 +195,10 @@ input::-moz-focus-inner {
 		margin: 0 0 1.5rem 0;
 	}
 
+	.flexdatalist-multiple {
+		width: 30%;
+	}
+
 	h3 {
 		font-size: 1.25rem;
 		margin: 0 0 1.5rem 0;
@@ -3216,6 +3220,9 @@ input::-moz-focus-inner {
 		padding: 3px 6px;
 	}
 
+	.more {
+		display: none;
+	}
 /* Wrapper */
 
 	#wrapper {
