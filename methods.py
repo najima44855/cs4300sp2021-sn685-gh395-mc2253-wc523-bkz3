@@ -112,7 +112,9 @@ def binsearch(arr, x):
     low = 0
     high = len(arr) - 1
     mid = 0
-    if arr[-1]<x:
+    if len(arr)==0:
+        return -1
+    elif arr[-1]<x:
         return -1
     else:
         while low <= high:
