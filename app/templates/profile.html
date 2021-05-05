@@ -21,20 +21,20 @@
             {% for i in range(0, len) %} 
                 <article>
                     <header>
-                        <h2><a href="#">{{sim_data[i]}}</a></h2>
+                        <h2><a href="{{sim_ids[i]}}">{{sim_data[i]}}</a></h2>
                     </header>
-                    <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
+                    <a href="{{sim_ids[i]}}" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
 
                     <form>
-                        <input type="submit" onclick="removeFromFavorites('{{sim_data[i]}}')" value="Remove from favorites">
+                        <input type="submit" onclick="removeFromFavorites('{{sim_data[i]}}', '{{ unfav_url }}')" value="Remove from favorites">
 
                         <script>
-                            function removeFromFavorites(title) {
+                            function removeFromFavorites(title, post_url) {
                                 var params = {
                                     "title": title
                                 };
                                 var xhttp = new XMLHttpRequest();
-                                xhttp.open("POST", "http://localhost:5000/unfavorite/", false);
+                                xhttp.open("POST", post_url, false);
                                 xhttp.send(JSON.stringify(params));
                             }
                         </script>

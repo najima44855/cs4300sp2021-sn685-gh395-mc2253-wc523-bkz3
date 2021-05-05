@@ -151,28 +151,34 @@ def logout():
 @irsystem.route('/profile/', methods=['GET'])
 def profile():
 	was_successful, favorites = get_favorites(current_user.username)
+	unfav_url = os.environ['BASE_URL'] + 'unfavorite/'
 
 	if not was_successful:
 		return render_template('profile.html', name=current_user.fname, \
 			home_class="", profile_class = "active", login_class = "", \
-			register_class = "", logout_class = "", no_favorites = True)
+			register_class = "", logout_class = "", no_favorites = True, \
+			unfav_url=unfav_url)
 
 	sim_data = []
 	sim_images = []
+	sim_ids = []
 
 	for f in favorites:
 		sim_data.append(f.title)
 		sim_images.append(f.img_url)
+		sim_ids.append(f.manga_url)
 
 	return render_template('profile.html', name=current_user.fname, \
 		home_class="", profile_class = "active", login_class = "", \
 		register_class = "", logout_class = "", no_favorites = False, \
-		sim_data=sim_data, sim_images=sim_images, len=len(sim_data))
+		sim_data=sim_data, sim_images=sim_images, sim_ids=sim_ids, \
+		len=len(sim_data))
 
 @irsystem.route('/favorite/', methods=['POST'])
 def favorite():
 	body = json.loads(request.data)
-	create_favorites(current_user.username, body.get('title'), body.get('img_url'))
+	create_favorites(current_user.username, body.get('title'), \
+		body.get('img_url'), body.get('manga_url'))
 
 	return redirect(url_for('irsystem.profile'))
 
@@ -201,6 +207,8 @@ def manga_details(manga_id):
 		manga_reviews_upvotes.append(review['helpful_count'])
 	dict_id = id_to_index[manga_id]
 
+	sim_id = os.environ['BASE_URL'] + 'manga/' + str(manga_id) + '/'
+
 	fav_url = os.environ['BASE_URL'] + 'favorite/'
 	unfav_url = os.environ['BASE_URL'] + 'unfavorite/'
 
@@ -212,7 +220,7 @@ def manga_details(manga_id):
 		manga_reviews_usernames=manga_reviews_usernames, \
 		manga_reviews_upvotes=manga_reviews_upvotes, \
 		len=len(manga_reviews), \
-		fav_url=fav_url, unfav_url=unfav_url)
+		fav_url=fav_url, unfav_url=unfav_url, sim_id=sim_id)
 
 @irsystem.route('/api/', methods=['POST'])
 def api():

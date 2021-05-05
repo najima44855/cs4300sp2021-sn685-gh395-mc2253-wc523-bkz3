@@ -26,13 +26,14 @@
 
         <form>
             {% if favorited %}
-            <input type="submit" onclick="addToFavorites('{{ manga_title }}', '{{ manga_image }}', '{{ fav_url }}')" value="Add to favorites">
+            <input type="submit" onclick="addToFavorites('{{ manga_title }}', '{{ manga_image }}', '{{ sim_id }}', '{{ fav_url }}')" value="Add to favorites">
 
             <script>
-                function addToFavorites(title, img_url, post_url) {
+                function addToFavorites(title, img_url, manga_url, post_url) {
                     var params = {
                         "title": title,
-                        "img_url": img_url
+                        "img_url": img_url, 
+                        "manga_url": manga_url
                     };
                     var xhttp = new XMLHttpRequest();
                     xhttp.open("POST", post_url, false);

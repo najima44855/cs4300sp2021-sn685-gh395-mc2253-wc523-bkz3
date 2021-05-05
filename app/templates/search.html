@@ -108,13 +108,14 @@ $('.flexdatalist-json').flexdatalist({
                     {% if current_user.is_authenticated %}
 
                     <form>
-                        <input type="submit" onclick="addToFavorites('{{sim_data[i]}}', '{{sim_images[i]}}', '{{ fav_url }}')" value="Add to favorites">
+                        <input type="submit" onclick="addToFavorites('{{sim_data[i]}}', '{{sim_images[i]}}', '{{ sim_ids[i] }}', '{{ fav_url }}')" value="Add to favorites">
 
                         <script>
-                            function addToFavorites(title, img_url, post_url) {
+                            function addToFavorites(title, img_url, manga_url, post_url) {
                                 var params = {
                                     "title": title,
-                                    "img_url": img_url
+                                    "img_url": img_url, 
+                                    "manga_url": manga_url
                                 };
                                 var xhttp = new XMLHttpRequest();
                                 xhttp.open("POST", post_url, false);

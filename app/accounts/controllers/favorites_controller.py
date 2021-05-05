@@ -4,7 +4,7 @@ from ..models.favorites import *
 from .users_controller import *
 from app import db
 
-def create_favorites(uname, manga_name, img_url):
+def create_favorites(uname, manga_name, img_url, manga_url):
     user = get_user_by_username(uname)
 
     if user is None:
@@ -16,7 +16,8 @@ def create_favorites(uname, manga_name, img_url):
     if optional_favorite is not None:
         return False, optional_favorite
 
-    favorite = Favorites(user_id=user.id, title=manga_name, img_url=img_url)
+    favorite = Favorites(user_id=user.id, title=manga_name, img_url=img_url, \
+        manga_url=manga_url)
     db.session.add(favorite)
     db.session.commit()
 
