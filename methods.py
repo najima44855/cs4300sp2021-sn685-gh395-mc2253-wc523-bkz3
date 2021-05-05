@@ -38,13 +38,19 @@ def highlight(orig_query, sim_query, text):
                 text = text[:idx]+"<span class=highlight2>"+sim_term+"</span>"+text[idx+word_len:]
         return text
 
+index_to_id = dict()
+id_to_index = dict()
 index_to_manga_name = dict()
 index_to_manga_synopsis = dict()
 index_to_manga_pic = dict()
+name_to_id = dict()
 for i, manga_item in enumerate(manga_list.values()):
+    index_to_id[i] = manga_item['id']
+    id_to_index[manga_item['id']] = i
     index_to_manga_name[i] = manga_item['title']
     index_to_manga_synopsis[i] = manga_item['synopsis']
     index_to_manga_pic[i] = manga_item['main_picture']['large']
+    name_to_id[manga_item['title']] = manga_item['id']
 
 manga_synonym_dict = dict() #manga title-> main title
 for manga_item in manga_list.values():

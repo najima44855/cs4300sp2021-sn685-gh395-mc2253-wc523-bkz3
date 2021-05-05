@@ -38,6 +38,7 @@ def home():
 	sim_keywords = ''
 	unmatched_manga = ''
 	sim_data = []
+	sim_ids = []
 	sim_synopses = []
 	sim_images = []
 	sim_scores = []
@@ -68,6 +69,8 @@ def home():
 		sim_keywords = (", ").join(x.json()['similar_keywords'])
 		unmatched_manga = (", ").join(x.json()['unmatched_manga'])
 		sim_data = x.json()['similar']
+		temp_sim_ids = x.json()['similar_ids']
+		sim_ids = ['https://manga-recs.herokuapp.com/manga/' + str(x) + '/' for x in temp_sim_ids]
 		sim_synopses = x.json()['similar_synopses']
 		sim_images = x.json()['similar_images']
 		sim_scores = x.json()['similar_scores']
@@ -75,8 +78,8 @@ def home():
 		pmatch_mlist = x.json()['pmatch_mlist']
 	return render_template('search.html', name=project_name, netid=net_id, has_match=has_match,\
 		unmatched_manga=unmatched_manga, output_query=output_query, output_list=output_list, \
-		sim_keywords = sim_keywords, sim_data=sim_data, manga_list=index_to_manga_name.values(), \
-		sim_synopses=sim_synopses, sim_images=sim_images, \
+		sim_keywords = sim_keywords, sim_data=sim_data, sim_ids=sim_ids, \
+		manga_list=index_to_manga_name.values(), sim_synopses=sim_synopses, sim_images=sim_images, \
 		sim_scores=sim_scores, pmatch_keyword=pmatch_keyword, pmatch_mlist=pmatch_mlist, \
 		len=len(sim_data), home_class="active", profile_class = "", login_class = "", \
 		register_class = "", logout_class = "")
@@ -169,6 +172,28 @@ def favorite():
 
 	return redirect(url_for('irsystem.profile'))
 
+@irsystem.route('/unfavorite/', methods=['POST'])
+def unfavorite():
+	body = json.loads(request.data)
+	remove_favorites(current_user.username, body.get('title'))
+
+	return redirect(url_for('irsystem.profile'))
+
+@irsystem.route('/manga/<int:manga_id>/', methods=['GET'])
+def manga_details(manga_id):
+	response_body = requests.get('https://api.jikan.moe/v3/manga/' + \
+		str(manga_id) + '/reviews')
+
+	manga_reviews = []
+	for review in response_body.json()['reviews']:
+		manga_reviews.append(review['content'])
+	dict_id = id_to_index[manga_id]
+
+	return render_template('manga.html', \
+		manga_titles=index_to_manga_name[dict_id], \
+		manga_synopsis=index_to_manga_synopsis[dict_id], \
+		manga_image=index_to_manga_pic[dict_id], manga_reviews=manga_reviews)
+
 @irsystem.route('/api/', methods=['POST'])
 def api():
 	body = json.loads(request.data)
@@ -207,6 +232,7 @@ def api():
 	input_list_lower = [i.lower() for i in input_list]
 	combined_scores = cos_sim_scores + 0.25 * jac_sim_scores
 	overall_rank_idx = combined_scores.argsort()[::-1]
+	overall_rank_ids = []
 	overall_rank_names = []
 	overall_rank_synopses = []
 	overall_rank_images = []
@@ -223,6 +249,7 @@ def api():
 	for manga_idx in overall_rank_idx:
 		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
 			d1[manga_idx] = highlight(orig_query, sim_query, d1[manga_idx])
+			overall_rank_ids.append(index_to_id[manga_idx])
 			overall_rank_names.append(index_to_manga_name[manga_idx])
 			overall_rank_synopses.append(d1[manga_idx])
 			overall_rank_images.append(index_to_manga_pic[manga_idx])
@@ -238,15 +265,12 @@ def api():
 		{
 			'has_match': has_match,
 			'unmatched_manga': unmatched_manga,
+			'similar_ids': overall_rank_ids[:10],
 			'similar_keywords': sim_query,
 			'similar': overall_rank_names[:10],
-			'dissimilar': overall_rank_names[-10:],
 			'similar_synopses': overall_rank_synopses[:10],
-			'dissimilar_synopses': overall_rank_synopses[-10:],
 			'similar_images': overall_rank_images[:10],
-			'dissimilar_images': overall_rank_images[-10:],
 			'similar_scores': overall_rank_scores[:10],
-			'dissimilar_scores': overall_rank_scores[-10:],
 			'pmatch_keyword': percent_match_keyword[:10],
 			'pmatch_mlist': percent_match_mlist[:10]
 		}

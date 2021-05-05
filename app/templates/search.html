@@ -1,5 +1,5 @@
 <head>
-    <title>Search</title>
+    <title>Search - Manga Recs</title>
 </head>
 
 {% extends "base.html" %}
@@ -16,7 +16,7 @@
     <form class="form-inline global-search">
         <div class="form-group">
             <input id="query" type="text" name="query" class="form-control" placeholder="Keywords...">
-            <input list="mangas" id="input_list" type="text" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
+            <input list="mangas" id="input_list" type="email" name="input_list" class="form-control" placeholder="Manga titles..." multiple>
             <datalist id="mangas">
                 {% for m in manga_list %}
                     <option value="{{m}}">
@@ -45,7 +45,7 @@
             {% for i in range(0, len) %} 
                 <article>
                     <header>
-                        <h2><a href="#">{{sim_data[i]}}</a></h2>
+                        <h2><a href="{{ sim_ids[i] }}">{{sim_data[i]}}</a></h2>
                     </header>
                     <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
                     <p>Synopsis:</p>
@@ -69,7 +69,7 @@
                                     "img_url": img_url
                                 };
                                 var xhttp = new XMLHttpRequest();
-                                xhttp.open("POST", "http://localhost:5000/favorite/", false);
+                                xhttp.open("POST", "https://manga-recs.herokuapp.com/favorite/", false);
                                 xhttp.send(JSON.stringify(params));
                             }
                         </script>

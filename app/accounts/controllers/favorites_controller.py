@@ -22,6 +22,23 @@ def create_favorites(uname, manga_name, img_url):
 
     return True, favorite
 
+def remove_favorites(uname, manga_name):
+    user = get_user_by_username(uname)
+
+    if user is None:
+        return False, None
+
+    optional_favorite = Favorites.query.filter(Favorites.title == manga_name, \
+        Favorites.user_id == user.id).first()
+
+    if optional_favorite is None:
+        return False, None
+
+    db.session.delete(optional_favorite)
+    db.session.commit()
+
+    return True, optional_favorite
+
 def get_favorites(uname):
     user = get_user_by_username(uname)
 

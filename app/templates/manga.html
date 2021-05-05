@@ -1,0 +1,69 @@
+<head>
+    <title>{{ manga_title }} - Manga Recs</title>
+</head>
+
+{% extends "base.html" %}
+
+{% block content %}
+<div id="main">
+    <h2 class="title">{{ manga_title }}</h2>
+
+    <article class="post featured">
+        <header class="major">
+            <span class="date">More details</span>
+        </header>
+    </article>
+
+        <article>
+            <header>
+                <h2><a href="#">{{ manga_title }}</a></h2>
+            </header>
+            <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src="{{ manga_image }}" alt="{{ manga_title }} cover image" /></a>
+            <p>Synopsis:</p>
+            <p>{{manga_synopsis|safe}}</p>
+
+            {% if current_user.is_authenticated %}
+
+            <form>
+                {% if favorited %}
+                <input type="submit" onclick="addToFavorites('{{ manga_title }}', '{{ manga_image }}')" value="Add to favorites">
+
+                <script>
+                    function addToFavorites(title, img_url) {
+                        var params = {
+                            "title": title,
+                            "img_url": img_url
+                        };
+                        var xhttp = new XMLHttpRequest();
+                        xhttp.open("POST", "https://manga-recs.herokuapp.com/favorite/", false);
+                        xhttp.send(JSON.stringify(params));
+                    }
+                </script>
+                {% else %}
+                <input type="submit" onclick="removeFromFavorites('{{ manga_title }}')" value="Remove from favorites">
+
+                <script>
+                    function removeFromFavorites(title) {
+                        var params = {
+                            "title": title
+                        };
+                        var xhttp = new XMLHttpRequest();
+                        xhttp.open("POST", "https://manga-recs.herokuapp.com/unfavorite/", false);
+                        xhttp.send(JSON.stringify(params));
+                    }
+                </script>
+                {% endif %}
+            </form>
+            {% endif %}
+        </article>
+
+        <article>
+            <p>Reviews:</p>
+
+            {% for i in manga_reviews %}
+                <p>{{i|safe}}</p>
+            {% endfor %}
+        </article>
+    </section>
+</div>
+{% endblock %}

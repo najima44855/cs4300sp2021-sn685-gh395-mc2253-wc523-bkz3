@@ -1,3 +1,7 @@
+<head>
+    <title>Welcome, {{ name }}! - Manga Recs</title>
+</head>
+
 {% extends "base.html" %}
 
 {% block content %}
@@ -22,16 +26,15 @@
                     <a href="#" style="width: 300px; display: inline-block;" class="image fit"><img src={{sim_images[i]}} alt="{{sim_data[i]}} cover image" /></a>
 
                     <form>
-                        <input type="submit" onclick="addToFavorites('{{sim_data[i]}}', '{{sim_images[i]}}')" value="Add to favorites">
+                        <input type="submit" onclick="removeFromFavorites('{{sim_data[i]}}')" value="Remove from favorites">
 
                         <script>
-                            function addToFavorites(title, img_url) {
+                            function removeFromFavorites(title) {
                                 var params = {
-                                    "title": title,
-                                    "img_url": img_url
+                                    "title": title
                                 };
                                 var xhttp = new XMLHttpRequest();
-                                xhttp.open("POST", "http://localhost:5000/favorite/", false);
+                                xhttp.open("POST", "https://manga-recs.herokuapp.com/unfavorite/", false);
                                 xhttp.send(JSON.stringify(params));
                             }
                         </script>
