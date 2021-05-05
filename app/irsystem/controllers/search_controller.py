@@ -246,7 +246,10 @@ def api():
 	else:
 		has_match = True
 
+	count = 0
 	for manga_idx in overall_rank_idx:
+		if count == 10:
+			break
 		if index_to_manga_name[manga_idx].lower() not in input_list_lower:
 			d1[manga_idx] = highlight(orig_query, sim_query, d1[manga_idx])
 			overall_rank_ids.append(index_to_id[manga_idx])
@@ -260,6 +263,7 @@ def api():
 			else:
 				percent_match_keyword.append(0) #just to avoid errors in terminal
 				percent_match_mlist.append(0)
+			count += 1
 
 	return json.dumps(
 		{

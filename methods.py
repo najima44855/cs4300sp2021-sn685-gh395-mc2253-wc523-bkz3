@@ -16,30 +16,37 @@ def highlight(orig_query, sim_query, text):
     if len(orig_query)==0:
         return text
     else:
-        for orig_term in orig_query:
-            p = re.compile(orig_term+"[^a-zA-Z]")
-            word_len = len(orig_term)
-            start_idx = []
-            for m in p.finditer(text):
-                start_idx.append(m.start())
-            for r in range(len(start_idx)):
-                start_idx[r] = start_idx[r]+r*30
-            for idx in start_idx:
-                text = text[:idx]+"<span class=highlight1>"+orig_term+"</span>"+text[idx+word_len:]
-        for sim_term in sim_query:
-            p = re.compile(sim_term+"[^a-zA-Z]")
-            word_len = len(sim_term)
-            start_idx = []
-            for m in p.finditer(text):
-                start_idx.append(m.start())
-            for r in range(len(start_idx)):
-                start_idx[r] = start_idx[r]+r*30
-            for idx in start_idx:
-                text = text[:idx]+"<span class=highlight2>"+sim_term+"</span>"+text[idx+word_len:]
+        text = get_new_query(orig_query, text, True)
+        text = get_new_query(sim_query, text, False)
         return text
 
+<<<<<<< HEAD
 index_to_id = dict()
 id_to_index = dict()
+=======
+def get_new_query(terms, text, is_orig_term):
+    for term in terms:
+        p = re.compile(r"\b"+term+r"\b", re.IGNORECASE)
+        word_len = len(term)
+        start_idx = []
+        groups = []
+        for m in p.finditer(text):
+            start_idx.append(m.start())
+            groups.append(m.group())
+        for r in range(len(start_idx)):
+            start_idx[r] = start_idx[r]+r*30
+        for i, g in enumerate(groups):
+            if not g[-1].isalpha():
+                groups[i]=g[:-1]
+        if is_orig_term:
+            for i, idx in enumerate(start_idx):
+                text = text[:idx]+"<span class=highlight1>"+groups[i]+"</span>"+text[idx+word_len:]
+        else:
+            for i, idx in enumerate(start_idx):
+                text = text[:idx]+"<span class=highlight2>"+groups[i]+"</span>"+text[idx+word_len:]
+    return text
+
+>>>>>>> 198985cba8871594f29a4682bcfdd0d9dc3bbcae
 index_to_manga_name = dict()
 index_to_manga_synopsis = dict()
 index_to_manga_pic = dict()
