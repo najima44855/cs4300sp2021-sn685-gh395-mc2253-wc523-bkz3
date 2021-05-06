@@ -57,7 +57,7 @@
                                     document.getElementById("demo").innerHTML = this.responseText;
                                     }
                                 };
-                                xhttp.open("POST", "http://localhost:5000/favorite/");
+                                xhttp.open("POST", "https://manga-recs-3.herokuapp.com/favorite/");
                                 xhttp.send(JSON.stringify(params));
                             }
                         </script>
