@@ -12,6 +12,16 @@ from gensim.models import Word2Vec
 with open('dataset_1000_d.pickle','rb') as f:
     manga_list = pickle.load(f) #a dictionary
 
+"""
+Given a list/set containing keywords in original query, a list/set containing keywords found
+by word embeddings, and a synopsis, return the synopsis with the appropriate span html tag.
+Parameters: 
+orig_query: list/set of strings
+sim_query: list/set of strings
+text: string
+Returns:
+-modified with words in orig_query and sim_query highlighted by html tags.
+"""
 def highlight(orig_query, sim_query, text):
     if len(orig_query)==0:
         return text
@@ -19,7 +29,17 @@ def highlight(orig_query, sim_query, text):
         text = get_new_query(orig_query, text, True)
         text = get_new_query(sim_query, text, False)
         return text
-        
+
+"""
+helper function for highlight. Given terms to highlight in text, returns the text with 
+the appropriate highlighting given by is_orig_term
+Parameters:
+terms: list/set of strings
+text: string
+is_orig_term: True if from original query, false otherwise
+Returns:
+-text with highlight html tags
+"""        
 def get_new_query(terms, text, is_orig_term):
     for term in terms:
         p = re.compile(r"\b"+term+r"\b", re.IGNORECASE)
@@ -39,6 +59,7 @@ def get_new_query(terms, text, is_orig_term):
                 text = text[:idx]+"<span class=highlight2>"+groups[i]+"</span>"+text[idx+word_len:]
     return text
 
+#need these dictionaries to get info from top matches later
 index_to_id = dict()
 id_to_index = dict()
 index_to_manga_name = dict()
@@ -58,7 +79,7 @@ for i, manga_item in enumerate(manga_list.values()):
     name_to_id[manga_item['title']] = manga_item['id']
 
 manga_synonym_dict = dict() #manga title-> main title
-manga_titles = set()
+manga_titles = set() #contains every manga name (capitalized)
 for manga_item in manga_list.values():
     all_names = set()
     main_title = manga_item['title']
@@ -78,6 +99,17 @@ for manga_item in manga_list.values():
 
 
 model = Word2Vec.load('word2vec.model')
+"""
+Given an original query, attempt to do query expansion by adding top 3 most relevant
+words for each word in query as found by word embeddings model. Weights original 
+terms 2x as much as relevant terms.
+Parameters:
+-query:string
+Returns:
+-a list containing a single string (modified query)
+-a set containing words in original query
+-a list containing words added to query
+"""
 def add_to_query(query):
     words_in_model= set(model.wv.key_to_index.keys())
     new_query = ""
@@ -101,6 +133,15 @@ def add_to_query(query):
                         similar_query.append(w)
     return [new_query], set(original_query), similar_query
 
+"""
+If text has a length greater than 350, inserts html tags for read me section to hide the extra text.
+Does this in a "smart" way by inserting within spaces.
+Parameters:
+-text:string
+Returns:
+-modified text string with html tags if len>350
+-True if html tags were inserted, False if not
+"""
 def insert_readmore(text):
     p = re.compile(r'\s')
     l = [m.start() for m in p.finditer(text)]
@@ -111,7 +152,14 @@ def insert_readmore(text):
         text = text[:l[idx]] + '<span class="dots" style="display: inline;">...</span><span class="more" style="display: none;">' + text[l[idx]:] +"</span>"
         return text, True
         
-
+"""
+Helper function for insert_readmore. Does modified binary search given a list of indexes where the spaces are.
+Parameters:
+-arr: list of indices where spaces are
+-x: desired length (index) of string before cuts off to read me
+Returns:
+-the index corresponding to a space <350 chars, -1 if not possible e.g. when text is too short
+"""
 def binsearch(arr, x):
     low = 0
     high = len(arr) - 1
@@ -135,38 +183,14 @@ def binsearch(arr, x):
         return high
 
 """
-Given a manga, return the cosine similarity between the it and the query.
-Parameters:
-manga_name: String (The name of the manga to be compared)
-tfidf: TfidfVectorizer
-Returns: 
-
-def cos_sim(manga_name, tfidf):
-    query = manga_name_to_index['query']
-    manga_index = manga_name_to_index[manga_name]
-    query_norm = np.linalg.norm(tfidf[query])
-    manga_norm = np.linalg.norm(tfidf[manga_index])
-
-    return np.dot(tfidf[manga_index], tfidf[query]) / np.dot(query_norm, manga_norm)
-"""
-
-"""
-#testing for zero and nan vectors
-count1 = 0
-count2 = 0
-for vec in tfidfmatrix:
-    if not vec.any():
-        count1+=1
-    if True in np.isnan(vec):
-        count2+=1
-"""
-"""
 Given the tfidf representations of the data and the query, compute the ranking of 
 cosine similarity scores.
 
 Parameters:
 -tfidfmat (dxf): tfidf representation of the data
 -tfidfq (1xf): tfidf representation of the query
+-idx: index to manga name dictionary
+-num_manga: int, the value of f 
 
 Returns:
 -list of ranked manga by name
@@ -189,27 +213,6 @@ def cos_sim_rank(tfidfmat, tfidfq, idx, num_manga):
         results.append(idx[manga_idx])
     return results, cos_scores.argsort()[::-1], cos_scores
 
-
-"""
-Given a list of manga, return the jaccard similarity of their genres.
-Parameters:
-manga_list: List(String) (the list of manga to be compared)
-input_manga_to_genre_dict: Dictionary
-Returns: Int (The Jaccard similarity score of the given list)
-
-def jaccard(input_manga_list, input_manga_to_genre_dict):
-    if len(input_manga_list) == 0:
-        return 0
-    intersection_set = set(input_manga_list[0])
-    union_set = set(input_manga_list[0])
-    for m in input_manga_list[1:]:
-        genres = set(input_manga_to_genre_dict[m])
-        intersection_set = intersection_set.intersection(genres)
-        union_set = union_set.union(genres)
-    
-    return len(intersection_set) / len(union_set)
-"""
-
 """
 Given an input manga list to be similar to, computes the common genres in this
 list (50% occurance or greater).
@@ -218,6 +221,8 @@ Parameters:
 -manga_list: List(String) (the list of manga to be compared)
 -input_manga_to_genre_dict: Dictionary from manga names to genre
 -input_manga_to_index_dict: Dictionary from manga names to index
+-idx: index to manga name dictionary
+-num_manga: int, the value of f 
 
 Returns:
 -list of ranked manga by name
@@ -241,7 +246,7 @@ def grouped_jac_rank(input_manga_list, input_manga_to_genre_dict, input_manga_to
                 genre_count[genre] += 1
         else:
             unmatched_manga.append(m)
-    thresh = len(input_manga_list)/2 #change threshhold here
+    thresh = len(input_manga_list)/2 #change threshhold here (50%)
 
     common_genres = set()
     for genre in genre_count:
