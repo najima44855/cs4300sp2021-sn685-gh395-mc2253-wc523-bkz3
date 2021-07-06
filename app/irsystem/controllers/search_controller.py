@@ -204,7 +204,7 @@ def manga_details(manga_id):
 	read_more_list = []
 
 	for review in response_body.json()['reviews']:
-		review_content, has_readmore = insert_readmore(review['content'].replace("\\n","\n"))
+		review_content, has_readmore = insert_readmore(review['content'].replace("\\n","<br>"))
 		manga_reviews.append(review_content)
 		read_more_list.append(has_readmore)
 		manga_reviews_usernames.append(review['reviewer']['username'])
